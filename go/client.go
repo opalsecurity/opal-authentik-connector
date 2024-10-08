@@ -73,13 +73,17 @@ func (c *AuthentikClient) PaginatedListUsers(ctx *gin.Context) (users []authenti
 		return nil, "", errors.Wrap(err, "Encountered error while getting page number from request!")
 	}
 
-	ctxWithAuth := context.WithValue(ctx, authentik.ContextAccessToken, c.token)
+	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 	paginatedUsers, _, err := c.client.CoreApi.CoreUsersList(ctxWithAuth).Page(page).PageSize(DefaultPageSize).Execute()
 	if err != nil {
 		return nil, "", errors.Wrap(err, "Failed to list users from Authentik!")
 	}
 
 	return paginatedUsers.Results, getNextCursorFromPagination(paginatedUsers.Pagination), nil
+}
+
+func (c *AuthentikClient) addAuthTokenToCtx(ctx *gin.Context) context.Context {
+	return context.WithValue(ctx, authentik.ContextAccessToken, c.token)
 }
 
 func getNextCursorFromPagination(pagination authentik.Pagination) string {

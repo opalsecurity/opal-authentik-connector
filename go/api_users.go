@@ -39,7 +39,10 @@ func (api *UsersAPI) GetUsers(c *gin.Context) {
 		}
 	}
 
-	c.JSON(200, buildGetUsersResponse(users, nextCursor))
+	c.JSON(200, &UsersResponse{
+		Users:      users,
+		NextCursor: &nextCursor,
+	})
 }
 
 func toOpalUser(user authentik.User) *User {
@@ -50,12 +53,5 @@ func toOpalUser(user authentik.User) *User {
 	return &User{
 		Id:    user.GetUuid(),
 		Email: user.GetEmail(),
-	}
-}
-
-func buildGetUsersResponse(users []User, nextCursor string) *UsersResponse {
-	return &UsersResponse{
-		Users:      users,
-		NextCursor: &nextCursor,
 	}
 }
