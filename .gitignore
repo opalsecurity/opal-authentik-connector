@@ -12,11 +12,18 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+# vendor/ 
 
 gin-bin
 .secrets
 .secrets.env
 .vscode
 
+# Mac only
 .DS_Store
+
+# Ignore env files
+.env
+
+# Ignore vscode debugger bins
+*__debug_bin*

@@ -1,4 +1,4 @@
-package authentik
+package openapi
 
 import (
 	"context"
@@ -53,9 +53,13 @@ func NewAuthentikClient() (*AuthentikClient, error) {
 		return nil, errors.Errorf("Unable to find authentik token!")
 	}
 
+	configuration := authentik.NewConfiguration()
+	configuration.Host = os.Getenv("AUTHENTIK_HOST")
+	configuration.Scheme = os.Getenv("AUTHENTIK_SCHEME")
+
 	return &AuthentikClient{
 		token:  token,
-		client: authentik.NewAPIClient(authentik.NewConfiguration()),
+		client: authentik.NewAPIClient(configuration),
 	}, nil
 }
 
@@ -84,7 +88,7 @@ func getNextCursorFromPagination(pagination authentik.Pagination) string {
 }
 
 func getPageFromCtx(ctx *gin.Context) (int32, error) {
-	page, err := strconv.Atoi(ctx.DefaultQuery(PageQueryParam, "0"))
+	page, err := strconv.Atoi(ctx.DefaultQuery(PageQueryParam, "1"))
 	if err != nil {
 		return -1, err
 	}

@@ -10,8 +10,8 @@
 package openapi
 
 import (
-	"github.com/GIT_USER_ID/GIT_REPO_ID/go/authentik"
 	"github.com/gin-gonic/gin"
+	authentik "goauthentik.io/api/v3"
 )
 
 type UsersAPI struct {
@@ -19,20 +19,43 @@ type UsersAPI struct {
 
 // Get /users
 func (api *UsersAPI) GetUsers(c *gin.Context) {
-	authentik, err := authentik.NewAuthentikClient()
+	authentik, err := NewAuthentikClient()
 	if err != nil {
 		c.JSON(500, buildRespFromErr(err))
 		return
 	}
 
-	users, nextCursor, err := authentik.PaginatedListUsers(c)
+	authentikUsers, nextCursor, err := authentik.PaginatedListUsers(c)
 	if err != nil {
 		c.JSON(500, buildRespFromErr(err))
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"users":       users,
-		"next_cursor": nextCursor,
-	})
+	users := make([]User, 0)
+	for _, authentikUser := range authentikUsers {
+		user := toOpalUser(authentikUser)
+		if user != nil {
+			users = append(users, *user)
+		}
+	}
+
+	c.JSON(200, buildGetUsersResponse(users, nextCursor))
+}
+
+func toOpalUser(user authentik.User) *User {
+	if user.GetUuid() == "" || user.GetEmail() == "" {
+		return nil
+	}
+
+	return &User{
+		Id:    user.GetUuid(),
+		Email: user.GetEmail(),
+	}
+}
+
+func buildGetUsersResponse(users []User, nextCursor string) *UsersResponse {
+	return &UsersResponse{
+		Users:      users,
+		NextCursor: &nextCursor,
+	}
 }
