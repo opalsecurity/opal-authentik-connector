@@ -10,7 +10,11 @@ import (
 	authentik "goauthentik.io/api/v3"
 )
 
-const AuthentikTokenEnvKey = "AUTHENTIK_TOKEN"
+const (
+	AuthentikTokenEnvKey  = "AUTHENTIK_TOKEN"
+	AuthentikHostEnvKey   = "AUTHENTIK_HOST"
+	AuthentikSchemeEnvKey = "AUTHENTIK_SCHEME"
+)
 
 const PageQueryParam = "cursor"
 
@@ -54,8 +58,8 @@ func NewAuthentikClient() (*AuthentikClient, error) {
 	}
 
 	configuration := authentik.NewConfiguration()
-	configuration.Host = os.Getenv("AUTHENTIK_HOST")
-	configuration.Scheme = os.Getenv("AUTHENTIK_SCHEME")
+	configuration.Host = os.Getenv(AuthentikHostEnvKey)
+	configuration.Scheme = os.Getenv(AuthentikSchemeEnvKey)
 
 	return &AuthentikClient{
 		token:  token,
