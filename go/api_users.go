@@ -46,12 +46,12 @@ func (api *UsersAPI) GetUsers(c *gin.Context) {
 }
 
 func toOpalUser(user authentik.User) *User {
-	if user.GetUuid() == "" || user.GetEmail() == "" {
+	if user.GetUid() == "" || user.GetEmail() == "" {
 		return nil
 	}
 
 	return &User{
-		Id:    user.GetUuid(),
+		Id:    user.GetUid(),
 		Email: user.GetEmail(),
 	}
 }
