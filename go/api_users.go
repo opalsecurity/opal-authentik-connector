@@ -10,6 +10,8 @@
 package openapi
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	authentik "goauthentik.io/api/v3"
 )
@@ -46,12 +48,12 @@ func (api *UsersAPI) GetUsers(c *gin.Context) {
 }
 
 func toOpalUser(user authentik.User) *User {
-	if user.GetUid() == "" || user.GetEmail() == "" {
+	if user.GetEmail() == "" {
 		return nil
 	}
 
 	return &User{
-		Id:    user.GetUid(),
+		Id:    strconv.Itoa(int(user.GetPk())),
 		Email: user.GetEmail(),
 	}
 }
