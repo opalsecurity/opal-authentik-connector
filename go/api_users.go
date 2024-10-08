@@ -23,13 +23,13 @@ type UsersAPI struct {
 func (api *UsersAPI) GetUsers(c *gin.Context) {
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err))
+		c.JSON(500, buildRespFromErr(err, 500))
 		return
 	}
 
 	authentikUsers, nextCursor, err := authentik.PaginatedListUsers(c)
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err))
+		c.JSON(500, buildRespFromErr(err, 500))
 		return
 	}
 
