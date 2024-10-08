@@ -37,13 +37,13 @@ func (api *GroupsAPI) GetGroup(c *gin.Context) {
 
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err))
+		c.JSON(500, buildRespFromErr(err, 500))
 		return
 	}
 
 	authentikGroup, err := authentik.GetGroup(c, groupID)
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err))
+		c.JSON(500, buildRespFromErr(err, 500))
 		return
 	}
 	opalGroup := toOpalGroup(authentikGroup)
@@ -64,13 +64,13 @@ func (api *GroupsAPI) GetGroupUsers(c *gin.Context) {
 
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err))
+		c.JSON(500, buildRespFromErr(err, 500))
 		return
 	}
 
 	groupMemberships, err := authentik.GetGroupUsers(c, groupID)
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err))
+		c.JSON(500, buildRespFromErr(err, 500))
 		return
 	}
 
@@ -94,13 +94,13 @@ func (api *GroupsAPI) GetGroupUsers(c *gin.Context) {
 func (api *GroupsAPI) GetGroups(c *gin.Context) {
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err))
+		c.JSON(500, buildRespFromErr(err, 500))
 		return
 	}
 
 	authentikGroups, nextCursor, err := authentik.PaginatedListGroups(c)
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err))
+		c.JSON(500, buildRespFromErr(err, 500))
 		return
 	}
 
