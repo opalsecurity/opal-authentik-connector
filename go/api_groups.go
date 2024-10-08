@@ -31,8 +31,23 @@ func (api *GroupsAPI) AddGroupUser(c *gin.Context) {
 
 // Get /groups/:group_id
 func (api *GroupsAPI) GetGroup(c *gin.Context) {
+	groupID := c.Param("group_id")
+
+	authentik, err := NewAuthentikClient()
+	if err != nil {
+		c.JSON(500, buildRespFromErr(err))
+		return
+	}
+
+	authentikGroup, err := authentik.GetGroup(c, groupID)
+	if err != nil {
+		c.JSON(500, buildRespFromErr(err))
+		return
+	}
+	opalGroup := toOpalGroup(authentikGroup)
+
 	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	c.JSON(200, gin.H{"group": *opalGroup})
 }
 
 // Get /groups/:group_id/resources
@@ -48,9 +63,15 @@ func (api *GroupsAPI) GetGroupUsers(c *gin.Context) {
 	authentik, err := NewAuthentikClient()
 	if err != nil {
 		c.JSON(500, buildRespFromErr(err))
+		return
 	}
 
 	groupMemberships, err := authentik.GetGroupUsers(c, groupID)
+	if err != nil {
+		c.JSON(500, buildRespFromErr(err))
+		return
+	}
+
 	groupUsers := make([]GroupUser, 0)
 	for _, groupMembership := range groupMemberships {
 		groupUsers = append(groupUsers, GroupUser{
@@ -72,11 +93,13 @@ func (api *GroupsAPI) GetGroups(c *gin.Context) {
 	authentik, err := NewAuthentikClient()
 	if err != nil {
 		c.JSON(500, buildRespFromErr(err))
+		return
 	}
 
 	authentikGroups, nextCursor, err := authentik.PaginatedListGroups(c)
 	if err != nil {
 		c.JSON(500, buildRespFromErr(err))
+		return
 	}
 
 	groups := make([]Group, 0)
