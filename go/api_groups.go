@@ -43,14 +43,52 @@ func (api *GroupsAPI) GetGroupResources(c *gin.Context) {
 
 // Get /groups/:group_id/users
 func (api *GroupsAPI) GetGroupUsers(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	groupID := c.Param("group_id")
+
+	authentik, err := NewAuthentikClient()
+	if err != nil {
+		c.JSON(500, buildRespFromErr(err))
+	}
+
+	groupMemberships, err := authentik.GetGroupUsers(c, groupID)
+	groupUsers := make([]GroupUser, 0)
+	for _, groupMembership := range groupMemberships {
+		groupUsers = append(groupUsers, GroupUser{
+			UserId: groupMembership.GetUid(),
+			Email:  groupMembership.GetEmail(),
+		})
+	}
+
+	// Next cursor being "" tells Opal this is the last page. Since GroupUsers are not paginated in Authentik we use this
+	nextCursor := ""
+	c.JSON(200, GroupUsersResponse{
+		NextCursor: &nextCursor,
+		Users:      groupUsers,
+	})
 }
 
 // Get /groups
 func (api *GroupsAPI) GetGroups(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	authentik, err := NewAuthentikClient()
+	if err != nil {
+		c.JSON(500, buildRespFromErr(err))
+	}
+
+	authentikGroups, nextCursor, err := authentik.PaginatedListGroups(c)
+	if err != nil {
+		c.JSON(500, buildRespFromErr(err))
+	}
+
+	groups := make([]Group, 0)
+	for _, authentikGroup := range authentikGroups {
+		group := toOpalGroup(&authentikGroup)
+		groups = append(groups, *group)
+	}
+
+	c.JSON(200, GroupsResponse{
+		Groups:     groups,
+		NextCursor: &nextCursor,
+	})
 }
 
 // Delete /groups/:group_id/resources/:resource_id
@@ -67,6 +105,8 @@ func (api *GroupsAPI) RemoveGroupUser(c *gin.Context) {
 
 func toOpalGroup(group *authentik.Group) *Group {
 	return &Group{
-		Id: group.GetPk(),
+		Id:   group.GetPk(),
+		Name: group.GetName(),
+		// Description is not available for authentik groups
 	}
 }

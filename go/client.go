@@ -107,6 +107,15 @@ func (c *AuthentikClient) PaginatedListGroups(ctx *gin.Context) (groups []authen
 	return paginatedGroups.Results, getNextCursorFromPagination(paginatedGroups.Pagination), nil
 }
 
+func (c *AuthentikClient) GetGroupUsers(ctx *gin.Context, groupID string) (members []authentik.GroupMember, err error) {
+	group, _, err := c.client.CoreApi.CoreGroupsRetrieve(ctx, groupID).Execute()
+	if err != nil {
+		return nil, err
+	}
+
+	return group.UsersObj, nil
+}
+
 func (c *AuthentikClient) addAuthTokenToCtx(ctx *gin.Context) context.Context {
 	return context.WithValue(ctx, authentik.ContextAccessToken, c.token)
 }
