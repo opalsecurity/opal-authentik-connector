@@ -92,23 +92,23 @@ func (c *AuthentikClient) PaginatedListUsers(ctx *gin.Context) (users []authenti
 	return paginatedUsers.Results, getNextCursorFromPagination(paginatedUsers.Pagination), nil
 }
 
-func (c *AuthentikClient) addAuthTokenToCtx(ctx *gin.Context) context.Context {
-	return context.WithValue(ctx, authentik.ContextAccessToken, c.token)
-}
-
 func (c *AuthentikClient) PaginatedListGroups(ctx *gin.Context) (groups []authentik.Group, nextCursor string, err error) {
 	page, err := getPageFromCtx(ctx)
 	if err != nil {
 		return nil, "", errors.Wrap(err, "Encountered error while getting page number from request!")
 	}
 
-	ctxWithAuth := context.WithValue(ctx, authentik.ContextAccessToken, c.token)
+	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 	paginatedGroups, _, err := c.client.CoreApi.CoreGroupsList(ctxWithAuth).Page(page).PageSize(DefaultPageSize).Execute()
 	if err != nil {
 		return nil, "", errors.Wrap(err, "Failed to list groups from Authentik!")
 	}
 
 	return paginatedGroups.Results, getNextCursorFromPagination(paginatedGroups.Pagination), nil
+}
+
+func (c *AuthentikClient) addAuthTokenToCtx(ctx *gin.Context) context.Context {
+	return context.WithValue(ctx, authentik.ContextAccessToken, c.token)
 }
 
 func getNextCursorFromPagination(pagination authentik.Pagination) string {

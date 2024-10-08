@@ -11,6 +11,7 @@ package openapi
 
 import (
 	"github.com/gin-gonic/gin"
+	authentik "goauthentik.io/api/v3"
 )
 
 type GroupsAPI struct {
@@ -64,3 +65,8 @@ func (api *GroupsAPI) RemoveGroupUser(c *gin.Context) {
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
+func toOpalGroup(group *authentik.Group) *Group {
+	return &Group{
+		Id: group.GetPk(),
+	}
+}
