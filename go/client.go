@@ -96,6 +96,21 @@ func (c *AuthentikClient) addAuthTokenToCtx(ctx *gin.Context) context.Context {
 	return context.WithValue(ctx, authentik.ContextAccessToken, c.token)
 }
 
+func (c *AuthentikClient) PaginatedListGroups(ctx *gin.Context) (groups []authentik.Group, nextCursor string, err error) {
+	page, err := getPageFromCtx(ctx)
+	if err != nil {
+		return nil, "", errors.Wrap(err, "Encountered error while getting page number from request!")
+	}
+
+	ctxWithAuth := context.WithValue(ctx, authentik.ContextAccessToken, c.token)
+	paginatedGroups, _, err := c.client.CoreApi.CoreGroupsList(ctxWithAuth).Page(page).PageSize(DefaultPageSize).Execute()
+	if err != nil {
+		return nil, "", errors.Wrap(err, "Failed to list groups from Authentik!")
+	}
+
+	return paginatedGroups.Results, getNextCursorFromPagination(paginatedGroups.Pagination), nil
+}
+
 func getNextCursorFromPagination(pagination authentik.Pagination) string {
 	// If on last page, return empty next cursor, which means all resources have been fetched
 	if pagination.TotalPages == pagination.Current {
