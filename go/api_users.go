@@ -10,6 +10,7 @@
 package openapi
 
 import (
+	"github.com/GIT_USER_ID/GIT_REPO_ID/go/authentik"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +19,20 @@ type UsersAPI struct {
 
 // Get /users
 func (api *UsersAPI) GetUsers(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
-}
+	authentik, err := authentik.NewAuthentikClient()
+	if err != nil {
+		c.JSON(500, buildRespFromErr(err))
+		return
+	}
 
+	users, nextCursor, err := authentik.PaginatedListUsers(c)
+	if err != nil {
+		c.JSON(500, buildRespFromErr(err))
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"users":       users,
+		"next_cursor": nextCursor,
+	})
+}
