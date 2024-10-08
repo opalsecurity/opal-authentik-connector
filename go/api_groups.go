@@ -10,6 +10,8 @@
 package openapi
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	authentik "goauthentik.io/api/v3"
 )
@@ -75,7 +77,7 @@ func (api *GroupsAPI) GetGroupUsers(c *gin.Context) {
 	groupUsers := make([]GroupUser, 0)
 	for _, groupMembership := range groupMemberships {
 		groupUsers = append(groupUsers, GroupUser{
-			UserId: groupMembership.GetUid(),
+			UserId: strconv.Itoa(int(groupMembership.GetPk())),
 			Email:  groupMembership.GetEmail(),
 		})
 	}
