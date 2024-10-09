@@ -43,7 +43,18 @@ func (api *GroupsAPI) AddGroupUser(c *gin.Context) {
 		c.JSON(500, buildRespFromErr(err, 500))
 		return
 	}
-	authentik.AddUserToGroup(c, groupID, addGroupUserRequest.UserId)
+
+	err = authentik.AddUserToGroup(c, groupID, addGroupUserRequest.UserId)
+	if err != nil {
+		var clientErr *ClientError
+		if errors.As(err, &clientErr) {
+			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
+		} else {
+			c.JSON(500, buildRespFromErr(err, 500))
+		}
+		return
+	}
+
 	c.JSON(200, gin.H{})
 }
 
@@ -166,7 +177,17 @@ func (api *GroupsAPI) RemoveGroupUser(c *gin.Context) {
 		return
 	}
 
-	authentik.RemoveUserFromGroup(c, groupID, userID)
+	err = authentik.RemoveUserFromGroup(c, groupID, userID)
+	if err != nil {
+		var clientErr *ClientError
+		if errors.As(err, &clientErr) {
+			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
+		} else {
+			c.JSON(500, buildRespFromErr(err, 500))
+		}
+		return
+	}
+
 	c.JSON(200, gin.H{})
 }
 

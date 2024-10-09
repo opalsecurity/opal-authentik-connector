@@ -136,7 +136,10 @@ func (c *AuthentikClient) AddUserToGroup(ctx *gin.Context, groupID string, userI
 	}
 	userAccountRequest := authentik.NewUserAccountRequest(int32(userPK))
 
-	_, err = c.client.CoreApi.CoreGroupsAddUserCreate(ctxWithAuth, groupID).UserAccountRequest(*userAccountRequest).Execute()
+	resp, err := c.client.CoreApi.CoreGroupsAddUserCreate(ctxWithAuth, groupID).UserAccountRequest(*userAccountRequest).Execute()
+	if err != nil {
+		return &ClientError{StatusCode: resp.StatusCode, Message: "Failed to add user to group!", innerError: err}
+	}
 
 	return err
 }
@@ -150,7 +153,10 @@ func (c *AuthentikClient) RemoveUserFromGroup(ctx *gin.Context, groupID string, 
 	}
 	userAccountRequest := authentik.NewUserAccountRequest(int32(userPK))
 
-	_, err = c.client.CoreApi.CoreGroupsRemoveUserCreate(ctxWithAuth, groupID).UserAccountRequest(*userAccountRequest).Execute()
+	resp, err := c.client.CoreApi.CoreGroupsRemoveUserCreate(ctxWithAuth, groupID).UserAccountRequest(*userAccountRequest).Execute()
+	if err != nil {
+		return &ClientError{StatusCode: resp.StatusCode, Message: "Failed to add user to group!", innerError: err}
+	}
 
 	return err
 }
