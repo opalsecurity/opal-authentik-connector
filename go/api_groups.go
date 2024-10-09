@@ -29,8 +29,21 @@ func (api *GroupsAPI) AddGroupResource(c *gin.Context) {
 
 // Post /groups/:group_id/users
 func (api *GroupsAPI) AddGroupUser(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	groupID := c.Param("group_id")
+
+	var addGroupUserRequest AddGroupUserRequest
+	err := c.BindJSON(&addGroupUserRequest)
+	if err != nil {
+		c.JSON(401, buildRespFromErr(err, 401))
+	}
+
+	authentik, err := NewAuthentikClient()
+	if err != nil {
+		c.JSON(500, buildRespFromErr(err, 500))
+		return
+	}
+	authentik.AddUserToGroup(c, groupID, addGroupUserRequest.UserId)
+	c.JSON(200, gin.H{})
 }
 
 // Get /groups/:group_id
@@ -143,8 +156,17 @@ func (api *GroupsAPI) RemoveGroupResource(c *gin.Context) {
 
 // Delete /groups/:group_id/users/:user_id
 func (api *GroupsAPI) RemoveGroupUser(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	groupID := c.Param("group_id")
+	userID := c.Param("user_id")
+
+	authentik, err := NewAuthentikClient()
+	if err != nil {
+		c.JSON(500, buildRespFromErr(err, 500))
+		return
+	}
+
+	authentik.RemoveUserFromGroup(c, groupID, userID)
+	c.JSON(200, gin.H{})
 }
 
 func toOpalGroup(group *authentik.Group) *Group {

@@ -127,6 +127,34 @@ func (c *AuthentikClient) GetGroup(ctx *gin.Context, groupID string) (group *aut
 	return group, nil
 }
 
+func (c *AuthentikClient) AddUserToGroup(ctx *gin.Context, groupID string, userID string) error {
+	ctxWithAuth := c.addAuthTokenToCtx(ctx)
+	// User ID provided to opal is user's primary key
+	userPK, err := strconv.Atoi(userID)
+	if err != nil {
+		return err
+	}
+	userAccountRequest := authentik.NewUserAccountRequest(int32(userPK))
+
+	_, err = c.client.CoreApi.CoreGroupsAddUserCreate(ctxWithAuth, groupID).UserAccountRequest(*userAccountRequest).Execute()
+
+	return err
+}
+
+func (c *AuthentikClient) RemoveUserFromGroup(ctx *gin.Context, groupID string, userID string) error {
+	ctxWithAuth := c.addAuthTokenToCtx(ctx)
+	// User ID provided to opal is user's primary key
+	userPK, err := strconv.Atoi(userID)
+	if err != nil {
+		return err
+	}
+	userAccountRequest := authentik.NewUserAccountRequest(int32(userPK))
+
+	_, err = c.client.CoreApi.CoreGroupsRemoveUserCreate(ctxWithAuth, groupID).UserAccountRequest(*userAccountRequest).Execute()
+
+	return err
+}
+
 func (c *AuthentikClient) addAuthTokenToCtx(ctx *gin.Context) context.Context {
 	return context.WithValue(ctx, authentik.ContextAccessToken, c.token)
 }
