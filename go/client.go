@@ -161,6 +161,36 @@ func (c *AuthentikClient) RemoveUserFromGroup(ctx *gin.Context, groupID string, 
 	return err
 }
 
+func (c *AuthentikClient) AddGroupToGroup(ctx *gin.Context, containingGroupID string, memberGroupID string) error {
+	ctxWithAuth := c.addAuthTokenToCtx(ctx)
+
+	_, _, err := c.client.CoreApi.CoreGroupsUpdate(
+		ctxWithAuth,
+		memberGroupID,
+	).GroupRequest(
+		authentik.GroupRequest{
+			Parent: *authentik.NewNullableString(&containingGroupID),
+		},
+	).Execute()
+
+	return err
+}
+
+func (c *AuthentikClient) RemoveGroupFromGroup(ctx *gin.Context, containingGroupID string, memberGroupID string) error {
+	ctxWithAuth := c.addAuthTokenToCtx(ctx)
+
+	_, _, err := c.client.CoreApi.CoreGroupsUpdate(
+		ctxWithAuth,
+		containingGroupID,
+	).GroupRequest(
+		authentik.GroupRequest{
+			Parent: authentik.NullableString{},
+		},
+	).Execute()
+
+	return err
+}
+
 func (c *AuthentikClient) addAuthTokenToCtx(ctx *gin.Context) context.Context {
 	return context.WithValue(ctx, authentik.ContextAccessToken, c.token)
 }

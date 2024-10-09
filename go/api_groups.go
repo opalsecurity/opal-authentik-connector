@@ -21,6 +21,32 @@ import (
 type GroupsAPI struct {
 }
 
+// Post /groups/:group_id/member-groups
+func (api *GroupsAPI) AddGroupMemberGroup(c *gin.Context) {
+	containingGroupID := c.Param("group_id")
+
+	var addGroupMemberGroupRequest AddGroupMemberGroupRequest
+	err := c.BindJSON(&addGroupMemberGroupRequest)
+	if err != nil {
+		c.JSON(401, buildRespFromErr(err, 401))
+		return
+	}
+
+	authentik, err := NewAuthentikClient()
+	if err != nil {
+		c.JSON(500, buildRespFromErr(err, 500))
+		return
+	}
+
+	err = authentik.AddGroupToGroup(c, containingGroupID, addGroupMemberGroupRequest.GroupId)
+	if err != nil {
+		c.JSON(500, buildRespFromErr(err, 500))
+		return
+	}
+
+	c.JSON(200, gin.H{})
+}
+
 // Post /groups/:group_id/resources
 func (api *GroupsAPI) AddGroupResource(c *gin.Context) {
 	c.JSON(200, gin.H{})
@@ -157,6 +183,26 @@ func (api *GroupsAPI) GetGroups(c *gin.Context) {
 		Groups:     groups,
 		NextCursor: &nextCursor,
 	})
+}
+
+// Delete /groups/:group_id/member-groups/:member_group_id
+func (api *GroupsAPI) RemoveGroupMemberGroup(c *gin.Context) {
+	containingGroupID := c.Param("group_id")
+	memberGroupID := c.Param("member_group_id")
+
+	authentik, err := NewAuthentikClient()
+	if err != nil {
+		c.JSON(500, buildRespFromErr(err, 500))
+		return
+	}
+
+	err = authentik.RemoveGroupFromGroup(c, containingGroupID, memberGroupID)
+	if err != nil {
+		c.JSON(500, buildRespFromErr(err, 500))
+		return
+	}
+
+	c.JSON(200, gin.H{})
 }
 
 // Delete /groups/:group_id/resources/:resource_id
