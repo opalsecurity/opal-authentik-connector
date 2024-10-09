@@ -35,6 +35,7 @@ func (api *GroupsAPI) AddGroupUser(c *gin.Context) {
 	err := c.BindJSON(&addGroupUserRequest)
 	if err != nil {
 		c.JSON(401, buildRespFromErr(err, 401))
+		return
 	}
 
 	authentik, err := NewAuthentikClient()
