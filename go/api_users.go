@@ -10,6 +10,7 @@
 package openapi
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -29,7 +30,12 @@ func (api *UsersAPI) GetUsers(c *gin.Context) {
 
 	authentikUsers, nextCursor, err := authentik.PaginatedListUsers(c)
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		var clientErr *ClientError
+		if errors.As(err, &clientErr) {
+			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
+		} else {
+			c.JSON(500, buildRespFromErr(err, 500))
+		}
 		return
 	}
 

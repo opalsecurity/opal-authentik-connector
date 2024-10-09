@@ -20,6 +20,16 @@ const PageQueryParam = "cursor"
 
 const DefaultPageSize = 100
 
+type ClientError struct {
+	innerError error
+	StatusCode int
+	Message    string
+}
+
+func (e *ClientError) Error() string {
+	return "error: " + e.Message + " due to: " + e.innerError.Error()
+}
+
 // Default authentication strategy, look for token in environment variables
 func getTokenFromEnv() (token string, ok bool) {
 	if _, hasEnv := os.LookupEnv(AuthentikTokenEnvKey); !hasEnv {
@@ -74,9 +84,9 @@ func (c *AuthentikClient) PaginatedListUsers(ctx *gin.Context) (users []authenti
 	}
 
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
-	paginatedUsers, _, err := c.client.CoreApi.CoreUsersList(ctxWithAuth).Page(page).PageSize(DefaultPageSize).Execute()
+	paginatedUsers, resp, err := c.client.CoreApi.CoreUsersList(ctxWithAuth).Page(page).PageSize(DefaultPageSize).Execute()
 	if err != nil {
-		return nil, "", errors.Wrap(err, "Failed to list users from Authentik!")
+		return nil, "", &ClientError{StatusCode: resp.StatusCode, Message: "Failed to list users from Authentik!", innerError: err}
 	}
 
 	return paginatedUsers.Results, getNextCursorFromPagination(paginatedUsers.Pagination), nil
