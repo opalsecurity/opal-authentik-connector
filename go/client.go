@@ -99,9 +99,9 @@ func (c *AuthentikClient) PaginatedListGroups(ctx *gin.Context) (groups []authen
 	}
 
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
-	paginatedGroups, _, err := c.client.CoreApi.CoreGroupsList(ctxWithAuth).Page(page).PageSize(DefaultPageSize).Execute()
+	paginatedGroups, resp, err := c.client.CoreApi.CoreGroupsList(ctxWithAuth).Page(page).PageSize(DefaultPageSize).Execute()
 	if err != nil {
-		return nil, "", errors.Wrap(err, "Failed to list groups from Authentik!")
+		return nil, "", &ClientError{StatusCode: resp.StatusCode, Message: "Failed to list groups from Authentik!", innerError: err}
 	}
 
 	return paginatedGroups.Results, getNextCursorFromPagination(paginatedGroups.Pagination), nil
@@ -114,7 +114,7 @@ func (c *AuthentikClient) GetGroupUsers(ctx *gin.Context, groupID string) (membe
 		if resp.StatusCode == 404 {
 			return nil, nil
 		}
-		return nil, err
+		return nil, &ClientError{StatusCode: resp.StatusCode, Message: "Failed to get users for group!", innerError: err}
 	}
 
 	return group.UsersObj, nil
@@ -127,7 +127,7 @@ func (c *AuthentikClient) GetGroup(ctx *gin.Context, groupID string) (group *aut
 		if resp.StatusCode == 404 {
 			return nil, nil
 		}
-		return nil, err
+		return nil, &ClientError{StatusCode: resp.StatusCode, Message: "Failed to get group!", innerError: err}
 	}
 
 	return group, nil

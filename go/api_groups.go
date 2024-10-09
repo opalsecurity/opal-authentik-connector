@@ -10,6 +10,7 @@
 package openapi
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +44,12 @@ func (api *GroupsAPI) GetGroup(c *gin.Context) {
 
 	authentikGroup, err := authentik.GetGroup(c, groupID)
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		var clientErr *ClientError
+		if errors.As(err, &clientErr) {
+			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
+		} else {
+			c.JSON(500, buildRespFromErr(err, 500))
+		}
 		return
 	}
 	if authentikGroup == nil {
@@ -75,7 +81,12 @@ func (api *GroupsAPI) GetGroupUsers(c *gin.Context) {
 
 	groupMemberships, err := authentik.GetGroupUsers(c, groupID)
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		var clientErr *ClientError
+		if errors.As(err, &clientErr) {
+			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
+		} else {
+			c.JSON(500, buildRespFromErr(err, 500))
+		}
 		return
 	}
 	if groupMemberships == nil {
@@ -109,7 +120,12 @@ func (api *GroupsAPI) GetGroups(c *gin.Context) {
 
 	authentikGroups, nextCursor, err := authentik.PaginatedListGroups(c)
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		var clientErr *ClientError
+		if errors.As(err, &clientErr) {
+			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
+		} else {
+			c.JSON(500, buildRespFromErr(err, 500))
+		}
 		return
 	}
 
