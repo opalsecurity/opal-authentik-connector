@@ -46,6 +46,11 @@ func (api *GroupsAPI) GetGroup(c *gin.Context) {
 		c.JSON(500, buildRespFromErr(err, 500))
 		return
 	}
+	if authentikGroup == nil {
+		c.JSON(404, gin.H{})
+		return
+	}
+
 	opalGroup := toOpalGroup(authentikGroup)
 
 	// Your handler implementation
@@ -71,6 +76,10 @@ func (api *GroupsAPI) GetGroupUsers(c *gin.Context) {
 	groupMemberships, err := authentik.GetGroupUsers(c, groupID)
 	if err != nil {
 		c.JSON(500, buildRespFromErr(err, 500))
+		return
+	}
+	if groupMemberships == nil {
+		c.JSON(404, gin.H{})
 		return
 	}
 

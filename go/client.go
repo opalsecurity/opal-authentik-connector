@@ -109,8 +109,11 @@ func (c *AuthentikClient) PaginatedListGroups(ctx *gin.Context) (groups []authen
 
 func (c *AuthentikClient) GetGroupUsers(ctx *gin.Context, groupID string) (members []authentik.GroupMember, err error) {
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
-	group, _, err := c.client.CoreApi.CoreGroupsRetrieve(ctxWithAuth, groupID).IncludeUsers(true).Execute()
+	group, resp, err := c.client.CoreApi.CoreGroupsRetrieve(ctxWithAuth, groupID).IncludeUsers(true).Execute()
 	if err != nil {
+		if resp.StatusCode == 404 {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -119,8 +122,11 @@ func (c *AuthentikClient) GetGroupUsers(ctx *gin.Context, groupID string) (membe
 
 func (c *AuthentikClient) GetGroup(ctx *gin.Context, groupID string) (group *authentik.Group, err error) {
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
-	group, _, err = c.client.CoreApi.CoreGroupsRetrieve(ctxWithAuth, groupID).IncludeUsers(false).Execute()
+	group, resp, err := c.client.CoreApi.CoreGroupsRetrieve(ctxWithAuth, groupID).IncludeUsers(false).Execute()
 	if err != nil {
+		if resp.StatusCode == 404 {
+			return nil, nil
+		}
 		return nil, err
 	}
 
