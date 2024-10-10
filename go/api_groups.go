@@ -23,8 +23,7 @@ type GroupsAPI struct {
 
 // Post /groups/:group_id/resources
 func (api *GroupsAPI) AddGroupResource(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	c.JSON(501, gin.H{})
 }
 
 // Post /groups/:group_id/users
@@ -163,7 +162,7 @@ func (api *GroupsAPI) GetGroups(c *gin.Context) {
 // Delete /groups/:group_id/resources/:resource_id
 func (api *GroupsAPI) RemoveGroupResource(c *gin.Context) {
 	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	c.JSON(501, gin.H{})
 }
 
 // Delete /groups/:group_id/users/:user_id
