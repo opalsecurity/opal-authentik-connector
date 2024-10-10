@@ -65,8 +65,9 @@ func (api *GroupsAPI) GetGroup(c *gin.Context) {
 
 // Get /groups/:group_id/resources
 func (api *GroupsAPI) GetGroupResources(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	// Authentik groupresources not supported
+	nextCursor := ""
+	c.JSON(200, &GroupResourcesResponse{NextCursor: &nextCursor, Resources: []GroupResource{}})
 }
 
 // Get /groups/:group_id/users
