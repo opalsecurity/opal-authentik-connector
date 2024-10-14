@@ -10,6 +10,9 @@
 package openapi
 
 type GroupMemberGroupResponseGroupsInner struct {
-
 	GroupId string `json:"group_id,omitempty"`
+
+	Name string `json:"name,omitempty"`
+
+	Description string `json:"description,omitempty"`
 }

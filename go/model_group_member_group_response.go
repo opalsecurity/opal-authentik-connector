@@ -10,7 +10,6 @@
 package openapi
 
 type GroupMemberGroupResponse struct {
-
 	// The cursor with which to continue pagination if additional result pages exist.
 	NextCursor *string `json:"next_cursor"`
 

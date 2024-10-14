@@ -133,6 +133,12 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			handleFunctions.GroupsAPI.GetGroups,
 		},
 		{
+			"GetGroupMemberGroups",
+			http.MethodGet,
+			"/groups/:group_id/member-groups",
+			handleFunctions.GroupsAPI.GetGroupMemberGroups,
+		},
+		{
 			"RemoveGroupResource",
 			http.MethodDelete,
 			"/groups/:group_id/resources/:resource_id",
