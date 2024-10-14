@@ -164,11 +164,11 @@ func (c *AuthentikClient) RemoveUserFromGroup(ctx *gin.Context, groupID string, 
 func (c *AuthentikClient) AddGroupToGroup(ctx *gin.Context, containingGroupID string, memberGroupID string) error {
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 
-	_, resp, err := c.client.CoreApi.CoreGroupsUpdate(
+	_, resp, err := c.client.CoreApi.CoreGroupsPartialUpdate(
 		ctxWithAuth,
 		memberGroupID,
-	).GroupRequest(
-		authentik.GroupRequest{
+	).PatchedGroupRequest(
+		authentik.PatchedGroupRequest{
 			Parent: *authentik.NewNullableString(&containingGroupID),
 		},
 	).Execute()
@@ -182,12 +182,12 @@ func (c *AuthentikClient) AddGroupToGroup(ctx *gin.Context, containingGroupID st
 func (c *AuthentikClient) RemoveGroupFromGroup(ctx *gin.Context, containingGroupID string, memberGroupID string) error {
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 
-	_, resp, err := c.client.CoreApi.CoreGroupsUpdate(
+	_, resp, err := c.client.CoreApi.CoreGroupsPartialUpdate(
 		ctxWithAuth,
-		containingGroupID,
-	).GroupRequest(
-		authentik.GroupRequest{
-			Parent: authentik.NullableString{},
+		memberGroupID,
+	).PatchedGroupRequest(
+		authentik.PatchedGroupRequest{
+			Parent: *authentik.NewNullableString(nil),
 		},
 	).Execute()
 	if err != nil {
