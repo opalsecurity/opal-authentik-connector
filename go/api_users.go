@@ -11,6 +11,7 @@ package openapi
 
 import (
 	"errors"
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,7 @@ type UsersAPI struct {
 func (api *UsersAPI) GetUsers(c *gin.Context) {
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		return
 	}
 
@@ -34,7 +35,7 @@ func (api *UsersAPI) GetUsers(c *gin.Context) {
 		if errors.As(err, &clientErr) {
 			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
 		} else {
-			c.JSON(500, buildRespFromErr(err, 500))
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		}
 		return
 	}
@@ -47,7 +48,7 @@ func (api *UsersAPI) GetUsers(c *gin.Context) {
 		}
 	}
 
-	c.JSON(200, &UsersResponse{
+	c.JSON(http.StatusOK, &UsersResponse{
 		Users:      users,
 		NextCursor: &nextCursor,
 	})

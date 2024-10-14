@@ -10,6 +10,8 @@
 package openapi
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -43,7 +45,7 @@ func (api *ResourcesAPI) GetResourceUsers(c *gin.Context) {
 // Get /resources
 func (api *ResourcesAPI) GetResources(c *gin.Context) {
 	nextCursor := ""
-	c.JSON(200, ResourcesResponse{NextCursor: &nextCursor, Resources: []Resource{}})
+	c.JSON(http.StatusOK, ResourcesResponse{NextCursor: &nextCursor, Resources: []Resource{}})
 }
 
 // Delete /resources/:resource_id/users/:user_id
