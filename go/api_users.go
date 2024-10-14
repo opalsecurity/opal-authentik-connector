@@ -10,7 +10,12 @@
 package openapi
 
 import (
+	"errors"
+	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
+	authentik "goauthentik.io/api/v3"
 )
 
 type UsersAPI struct {
@@ -18,7 +23,44 @@ type UsersAPI struct {
 
 // Get /users
 func (api *UsersAPI) GetUsers(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	authentik, err := NewAuthentikClient()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
+		return
+	}
+
+	authentikUsers, nextCursor, err := authentik.PaginatedListUsers(c)
+	if err != nil {
+		var clientErr *ClientError
+		if errors.As(err, &clientErr) {
+			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
+		} else {
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
+		}
+		return
+	}
+
+	users := make([]User, 0)
+	for _, authentikUser := range authentikUsers {
+		user := toOpalUser(authentikUser)
+		if user != nil {
+			users = append(users, *user)
+		}
+	}
+
+	c.JSON(http.StatusOK, &UsersResponse{
+		Users:      users,
+		NextCursor: &nextCursor,
+	})
 }
 
+func toOpalUser(user authentik.User) *User {
+	if user.GetEmail() == "" {
+		return nil
+	}
+
+	return &User{
+		Id:    strconv.Itoa(int(user.GetPk())),
+		Email: user.GetEmail(),
+	}
+}
