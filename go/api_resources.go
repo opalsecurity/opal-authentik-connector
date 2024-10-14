@@ -42,8 +42,8 @@ func (api *ResourcesAPI) GetResourceUsers(c *gin.Context) {
 
 // Get /resources
 func (api *ResourcesAPI) GetResources(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	nextCursor := ""
+	c.JSON(200, ResourcesResponse{NextCursor: &nextCursor, Resources: []Resource{}})
 }
 
 // Delete /resources/:resource_id/users/:user_id
@@ -51,4 +51,3 @@ func (api *ResourcesAPI) RemoveResourceUser(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
-
