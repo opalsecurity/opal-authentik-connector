@@ -34,7 +34,7 @@ func (api *GroupsAPI) AddGroupMemberGroup(c *gin.Context) {
 
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		return
 	}
 
@@ -44,7 +44,7 @@ func (api *GroupsAPI) AddGroupMemberGroup(c *gin.Context) {
 		if errors.As(err, &clientErr) {
 			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
 		} else {
-			c.JSON(500, buildRespFromErr(err, 500))
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		}
 		return
 	}
@@ -165,7 +165,7 @@ func (api *GroupsAPI) GetGroupMemberGroups(c *gin.Context) {
 
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		return
 	}
 
@@ -175,7 +175,7 @@ func (api *GroupsAPI) GetGroupMemberGroups(c *gin.Context) {
 		if errors.As(err, &clientErr) {
 			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
 		} else {
-			c.JSON(500, buildRespFromErr(err, 500))
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		}
 		return
 	}
@@ -188,7 +188,7 @@ func (api *GroupsAPI) GetGroupMemberGroups(c *gin.Context) {
 
 	// Do not support pagination for this endpoint for Authentik
 	nextCursor := ""
-	c.JSON(200, GroupMemberGroupResponse{
+	c.JSON(http.StatusOK, GroupMemberGroupResponse{
 		NextCursor: &nextCursor,
 		Groups:     memberGroups,
 	})
@@ -232,7 +232,7 @@ func (api *GroupsAPI) RemoveGroupMemberGroup(c *gin.Context) {
 
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		return
 	}
 
@@ -242,7 +242,7 @@ func (api *GroupsAPI) RemoveGroupMemberGroup(c *gin.Context) {
 		if errors.As(err, &clientErr) {
 			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
 		} else {
-			c.JSON(500, buildRespFromErr(err, 500))
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		}
 		return
 	}

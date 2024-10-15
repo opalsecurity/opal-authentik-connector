@@ -111,10 +111,7 @@ func (c *AuthentikClient) ListChildrenGroups(ctx *gin.Context, groupID string) (
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 	usedByModels, resp, err := c.client.CoreApi.CoreGroupsUsedByList(ctxWithAuth, groupID).Execute()
 	if err != nil {
-		if resp.StatusCode == 404 {
-			return nil, nil
-		}
-		return nil, &ClientError{StatusCode: resp.StatusCode, Message: "Failed to get children groups for group!", innerError: err}
+		return nil, &ClientError{StatusCode: resp.StatusCode, Message: "failed to get children groups for group from Authentik", innerError: err}
 	}
 
 	memberGroups = make([]*authentik.Group, 0)

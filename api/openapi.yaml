@@ -513,6 +513,66 @@ paths:
       tags:
       - groups
   /groups/{group_id}/member-groups:
+    get:
+      description: Get member groups for the specified group
+      operationId: getGroupMemberGroups
+      parameters:
+      - description: The ID of the parent group
+        example: f454d283-ca67-4a8a-bdbb-df212eca5353
+        explode: true
+        in: path
+        name: group_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The pagination cursor value.
+        example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
+        explode: true
+        in: query
+        name: cursor
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: The identifier of your custom app.
+        example: my-custom-app
+        explode: true
+        in: query
+        name: app_id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMemberGroupResponse'
+          description: The member groups for the specified group
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: The request signature is invalid.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: The entity was not found.
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: An unexpected error occurred.
+      security:
+      - BearerAuth: []
+      tags:
+      - groups
     post:
       description: Add a member group to the specified group
       operationId: addGroupMemberGroup
@@ -1291,6 +1351,25 @@ components:
       required:
       - resources
       type: object
+    GroupMemberGroupResponse:
+      example:
+        next_cursor: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
+        group_id: f454d283-ca67-4a8a-bdbb-df212eca5353
+      properties:
+        next_cursor:
+          description: The cursor with which to continue pagination if additional
+            result pages exist.
+          example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
+          nullable: true
+          type: string
+        groups:
+          items:
+            $ref: '#/components/schemas/GroupMemberGroupResponse_groups_inner'
+          type: array
+      required:
+      - groups
+      - next_cursor
+      type: object
     addResourceUser_request:
       properties:
         user_id:
@@ -1338,3 +1417,15 @@ components:
       required:
       - app_id
       - resource_id
+    GroupMemberGroupResponse_groups_inner:
+      properties:
+        group_id:
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          type: string
+        name:
+          example: Test Group
+          type: string
+        description:
+          example: Test Group Description
+          type: string
+      type: object
