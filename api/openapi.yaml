@@ -512,6 +512,95 @@ paths:
       - BearerAuth: []
       tags:
       - groups
+  /groups/{group_id}/member-groups:
+    post:
+      description: Add a member group to the specified group
+      operationId: addGroupMemberGroup
+      parameters:
+        - description: The ID of the parent group
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: true
+          name: group_id
+          required: true
+          schema:
+            type: string
+          style: simple
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                group_id:
+                  description: The ID of the member group to add.
+                  example: f454d283-ca67-4a8a-bdbb-df212eca5353
+                  type: string
+                app_id:
+                  description: The identifier of your custom app.
+                  example: my-custom-app
+                  type: string
+              required:
+                - group_id
+                - app_id
+      responses:
+        "200":
+          description: The group was successfully added to the group.
+        "401":
+          $ref: "#/components/responses/InvalidRequestSignatureError"
+        "404":
+          $ref: "#/components/responses/EntityNotFoundError"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+      security:
+        - BearerAuth: []
+      tags:
+        - groups
+  /groups/{group_id}/member-groups/{member_group_id}:
+    delete:
+      description: Remove a member group from the specified group
+      operationId: removeGroupMemberGroup
+      parameters:
+        - description: The ID of the parent group
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: true
+          name: group_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The ID of the member group to remove.
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: true
+          name: member_group_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
+      responses:
+        "200":
+          description: The member group was successfully removed from the group
+        "401":
+          $ref: "#/components/responses/InvalidRequestSignatureError"
+        "404":
+          $ref: "#/components/responses/EntityNotFoundError"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+      security:
+        - BearerAuth: []
+      tags:
+        - groups
   /groups/{group_id}/users:
     get:
       description: Returns a list of users for the specified group.

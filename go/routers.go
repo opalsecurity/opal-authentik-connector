@@ -85,6 +85,12 @@ type ApiHandleFunctions struct {
 func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 	return []Route{
 		{
+			"AddGroupMemberGroup",
+			http.MethodPost,
+			"/groups/:group_id/member-groups",
+			handleFunctions.GroupsAPI.AddGroupMemberGroup,
+		},
+		{
 			"AddGroupResource",
 			http.MethodPost,
 			"/groups/:group_id/resources",
@@ -101,6 +107,12 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			http.MethodGet,
 			"/groups/:group_id",
 			handleFunctions.GroupsAPI.GetGroup,
+		},
+		{
+			"RemoveGroupMemberGroup",
+			http.MethodDelete,
+			"/groups/:group_id/member-groups/:member_group_id",
+			handleFunctions.GroupsAPI.RemoveGroupMemberGroup,
 		},
 		{
 			"GetGroupResources",

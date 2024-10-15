@@ -161,6 +161,42 @@ func (c *AuthentikClient) RemoveUserFromGroup(ctx *gin.Context, groupID string, 
 	return err
 }
 
+func (c *AuthentikClient) AddGroupToGroup(ctx *gin.Context, containingGroupID string, memberGroupID string) error {
+	ctxWithAuth := c.addAuthTokenToCtx(ctx)
+
+	_, resp, err := c.client.CoreApi.CoreGroupsPartialUpdate(
+		ctxWithAuth,
+		memberGroupID,
+	).PatchedGroupRequest(
+		authentik.PatchedGroupRequest{
+			Parent: *authentik.NewNullableString(&containingGroupID),
+		},
+	).Execute()
+	if err != nil {
+		return &ClientError{StatusCode: resp.StatusCode, Message: "Failed to add member group to containing group!", innerError: err}
+	}
+
+	return nil
+}
+
+func (c *AuthentikClient) RemoveGroupFromGroup(ctx *gin.Context, containingGroupID string, memberGroupID string) error {
+	ctxWithAuth := c.addAuthTokenToCtx(ctx)
+
+	_, resp, err := c.client.CoreApi.CoreGroupsPartialUpdate(
+		ctxWithAuth,
+		memberGroupID,
+	).PatchedGroupRequest(
+		authentik.PatchedGroupRequest{
+			Parent: *authentik.NewNullableString(nil),
+		},
+	).Execute()
+	if err != nil {
+		return &ClientError{StatusCode: resp.StatusCode, Message: "Failed to remove member group from containing group!", innerError: err}
+	}
+
+	return nil
+}
+
 func (c *AuthentikClient) addAuthTokenToCtx(ctx *gin.Context) context.Context {
 	return context.WithValue(ctx, authentik.ContextAccessToken, c.token)
 }
