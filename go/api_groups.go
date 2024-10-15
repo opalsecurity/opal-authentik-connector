@@ -11,6 +11,7 @@ package openapi
 
 import (
 	"errors"
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -38,7 +39,7 @@ func (api *GroupsAPI) GetGroup(c *gin.Context) {
 
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		return
 	}
 
@@ -48,26 +49,21 @@ func (api *GroupsAPI) GetGroup(c *gin.Context) {
 		if errors.As(err, &clientErr) {
 			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
 		} else {
-			c.JSON(500, buildRespFromErr(err, 500))
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		}
-		return
-	}
-	if authentikGroup == nil {
-		c.JSON(404, gin.H{})
 		return
 	}
 
 	opalGroup := toOpalGroup(authentikGroup)
 
-	// Your handler implementation
-	c.JSON(200, gin.H{"group": *opalGroup})
+	c.JSON(http.StatusOK, gin.H{"group": *opalGroup})
 }
 
 // Get /groups/:group_id/resources
 func (api *GroupsAPI) GetGroupResources(c *gin.Context) {
 	// Authentik groupresources not supported
 	nextCursor := ""
-	c.JSON(200, &GroupResourcesResponse{NextCursor: &nextCursor, Resources: []GroupResource{}})
+	c.JSON(http.StatusOK, &GroupResourcesResponse{NextCursor: &nextCursor, Resources: []GroupResource{}})
 }
 
 // Get /groups/:group_id/users
@@ -76,7 +72,7 @@ func (api *GroupsAPI) GetGroupUsers(c *gin.Context) {
 
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		return
 	}
 
@@ -86,18 +82,15 @@ func (api *GroupsAPI) GetGroupUsers(c *gin.Context) {
 		if errors.As(err, &clientErr) {
 			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
 		} else {
-			c.JSON(500, buildRespFromErr(err, 500))
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		}
-		return
-	}
-	if groupMemberships == nil {
-		c.JSON(404, gin.H{})
 		return
 	}
 
 	groupUsers := make([]GroupUser, 0)
 	for _, groupMembership := range groupMemberships {
 		groupUsers = append(groupUsers, GroupUser{
+			// The group member primary key is the user's primary key, which is the user ID we use throughout Opal
 			UserId: strconv.Itoa(int(groupMembership.GetPk())),
 			Email:  groupMembership.GetEmail(),
 		})
@@ -105,7 +98,7 @@ func (api *GroupsAPI) GetGroupUsers(c *gin.Context) {
 
 	// Next cursor being "" tells Opal this is the last page. Since GroupUsers are not paginated in Authentik we use this
 	nextCursor := ""
-	c.JSON(200, GroupUsersResponse{
+	c.JSON(http.StatusOK, GroupUsersResponse{
 		NextCursor: &nextCursor,
 		Users:      groupUsers,
 	})
@@ -115,7 +108,7 @@ func (api *GroupsAPI) GetGroupUsers(c *gin.Context) {
 func (api *GroupsAPI) GetGroups(c *gin.Context) {
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		return
 	}
 
@@ -125,7 +118,7 @@ func (api *GroupsAPI) GetGroups(c *gin.Context) {
 		if errors.As(err, &clientErr) {
 			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
 		} else {
-			c.JSON(500, buildRespFromErr(err, 500))
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		}
 		return
 	}
@@ -136,7 +129,7 @@ func (api *GroupsAPI) GetGroups(c *gin.Context) {
 		groups = append(groups, *group)
 	}
 
-	c.JSON(200, GroupsResponse{
+	c.JSON(http.StatusOK, GroupsResponse{
 		Groups:     groups,
 		NextCursor: &nextCursor,
 	})
@@ -156,6 +149,9 @@ func (api *GroupsAPI) RemoveGroupUser(c *gin.Context) {
 
 func toOpalGroup(group *authentik.Group) *Group {
 	return &Group{
+		// There are multiple available IDs for the groups, UID, UUID and PK
+		// PK is the same as UUID, and is guaranteed to be available throughout other Authentik APIs
+		// Therefore, we use the group's primary key as its ID in Opal
 		Id:   group.GetPk(),
 		Name: group.GetName(),
 		// Description is not available for authentik groups

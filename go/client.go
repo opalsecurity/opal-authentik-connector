@@ -86,7 +86,7 @@ func (c *AuthentikClient) PaginatedListUsers(ctx *gin.Context) (users []authenti
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 	paginatedUsers, resp, err := c.client.CoreApi.CoreUsersList(ctxWithAuth).Page(page).PageSize(DefaultPageSize).Execute()
 	if err != nil {
-		return nil, "", &ClientError{StatusCode: resp.StatusCode, Message: "Failed to list users from Authentik!", innerError: err}
+		return nil, "", &ClientError{StatusCode: resp.StatusCode, Message: "failed to list users from Authentik", innerError: err}
 	}
 
 	return paginatedUsers.Results, getNextCursorFromPagination(paginatedUsers.Pagination), nil
@@ -101,7 +101,7 @@ func (c *AuthentikClient) PaginatedListGroups(ctx *gin.Context) (groups []authen
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 	paginatedGroups, resp, err := c.client.CoreApi.CoreGroupsList(ctxWithAuth).Page(page).PageSize(DefaultPageSize).Execute()
 	if err != nil {
-		return nil, "", &ClientError{StatusCode: resp.StatusCode, Message: "Failed to list groups from Authentik!", innerError: err}
+		return nil, "", &ClientError{StatusCode: resp.StatusCode, Message: "failed to list groups from Authentik", innerError: err}
 	}
 
 	return paginatedGroups.Results, getNextCursorFromPagination(paginatedGroups.Pagination), nil
@@ -111,10 +111,7 @@ func (c *AuthentikClient) GetGroupUsers(ctx *gin.Context, groupID string) (membe
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 	group, resp, err := c.client.CoreApi.CoreGroupsRetrieve(ctxWithAuth, groupID).IncludeUsers(true).Execute()
 	if err != nil {
-		if resp.StatusCode == 404 {
-			return nil, nil
-		}
-		return nil, &ClientError{StatusCode: resp.StatusCode, Message: "Failed to get users for group!", innerError: err}
+		return nil, &ClientError{StatusCode: resp.StatusCode, Message: "failed to get users for group from Authentik", innerError: err}
 	}
 
 	return group.UsersObj, nil
@@ -124,10 +121,7 @@ func (c *AuthentikClient) GetGroup(ctx *gin.Context, groupID string) (group *aut
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 	group, resp, err := c.client.CoreApi.CoreGroupsRetrieve(ctxWithAuth, groupID).IncludeUsers(false).Execute()
 	if err != nil {
-		if resp.StatusCode == 404 {
-			return nil, nil
-		}
-		return nil, &ClientError{StatusCode: resp.StatusCode, Message: "Failed to get group!", innerError: err}
+		return nil, &ClientError{StatusCode: resp.StatusCode, Message: "failed to get group from authentik", innerError: err}
 	}
 
 	return group, nil
