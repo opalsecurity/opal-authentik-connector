@@ -54,7 +54,7 @@ func (api *GroupsAPI) AddGroupUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{})
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // Get /groups/:group_id
@@ -187,7 +187,7 @@ func (api *GroupsAPI) RemoveGroupUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{})
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 func toOpalGroup(group *authentik.Group) *Group {
