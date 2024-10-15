@@ -23,14 +23,38 @@ type GroupsAPI struct {
 
 // Post /groups/:group_id/resources
 func (api *GroupsAPI) AddGroupResource(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	c.JSON(200, gin.H{})
 }
 
 // Post /groups/:group_id/users
 func (api *GroupsAPI) AddGroupUser(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	groupID := c.Param("group_id")
+
+	var addGroupUserRequest AddGroupUserRequest
+	err := c.BindJSON(&addGroupUserRequest)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
+		return
+	}
+
+	authentik, err := NewAuthentikClient()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
+		return
+	}
+
+	err = authentik.AddUserToGroup(c, groupID, addGroupUserRequest.UserId)
+	if err != nil {
+		var clientErr *ClientError
+		if errors.As(err, &clientErr) {
+			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
+		} else {
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // Get /groups/:group_id
@@ -138,13 +162,32 @@ func (api *GroupsAPI) GetGroups(c *gin.Context) {
 // Delete /groups/:group_id/resources/:resource_id
 func (api *GroupsAPI) RemoveGroupResource(c *gin.Context) {
 	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	c.JSON(200, gin.H{})
 }
 
 // Delete /groups/:group_id/users/:user_id
 func (api *GroupsAPI) RemoveGroupUser(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	groupID := c.Param("group_id")
+	userID := c.Param("user_id")
+
+	authentik, err := NewAuthentikClient()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
+		return
+	}
+
+	err = authentik.RemoveUserFromGroup(c, groupID, userID)
+	if err != nil {
+		var clientErr *ClientError
+		if errors.As(err, &clientErr) {
+			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
+		} else {
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 func toOpalGroup(group *authentik.Group) *Group {
