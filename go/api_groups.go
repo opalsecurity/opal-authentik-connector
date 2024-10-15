@@ -23,7 +23,7 @@ type GroupsAPI struct {
 
 // Post /groups/:group_id/resources
 func (api *GroupsAPI) AddGroupResource(c *gin.Context) {
-	c.JSON(501, gin.H{})
+	c.JSON(200, gin.H{})
 }
 
 // Post /groups/:group_id/users
@@ -33,13 +33,13 @@ func (api *GroupsAPI) AddGroupUser(c *gin.Context) {
 	var addGroupUserRequest AddGroupUserRequest
 	err := c.BindJSON(&addGroupUserRequest)
 	if err != nil {
-		c.JSON(401, buildRespFromErr(err, 401))
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		return
 	}
 
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		return
 	}
 
@@ -49,7 +49,7 @@ func (api *GroupsAPI) AddGroupUser(c *gin.Context) {
 		if errors.As(err, &clientErr) {
 			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
 		} else {
-			c.JSON(500, buildRespFromErr(err, 500))
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		}
 		return
 	}
@@ -162,7 +162,7 @@ func (api *GroupsAPI) GetGroups(c *gin.Context) {
 // Delete /groups/:group_id/resources/:resource_id
 func (api *GroupsAPI) RemoveGroupResource(c *gin.Context) {
 	// Your handler implementation
-	c.JSON(501, gin.H{})
+	c.JSON(200, gin.H{})
 }
 
 // Delete /groups/:group_id/users/:user_id
@@ -172,7 +172,7 @@ func (api *GroupsAPI) RemoveGroupUser(c *gin.Context) {
 
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		return
 	}
 
@@ -182,7 +182,7 @@ func (api *GroupsAPI) RemoveGroupUser(c *gin.Context) {
 		if errors.As(err, &clientErr) {
 			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
 		} else {
-			c.JSON(500, buildRespFromErr(err, 500))
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		}
 		return
 	}

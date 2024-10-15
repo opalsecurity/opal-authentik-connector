@@ -129,7 +129,7 @@ func (c *AuthentikClient) GetGroup(ctx *gin.Context, groupID string) (group *aut
 
 func (c *AuthentikClient) AddUserToGroup(ctx *gin.Context, groupID string, userID string) error {
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
-	// User ID provided to opal is user's primary key
+	// The user ID provided by Opal is the user's primary key in Authentik
 	userPK, err := strconv.Atoi(userID)
 	if err != nil {
 		return err
@@ -138,7 +138,7 @@ func (c *AuthentikClient) AddUserToGroup(ctx *gin.Context, groupID string, userI
 
 	resp, err := c.client.CoreApi.CoreGroupsAddUserCreate(ctxWithAuth, groupID).UserAccountRequest(*userAccountRequest).Execute()
 	if err != nil {
-		return &ClientError{StatusCode: resp.StatusCode, Message: "Failed to add user to group!", innerError: err}
+		return &ClientError{StatusCode: resp.StatusCode, Message: "failed to add user to group in Authentik", innerError: err}
 	}
 
 	return err
@@ -146,7 +146,7 @@ func (c *AuthentikClient) AddUserToGroup(ctx *gin.Context, groupID string, userI
 
 func (c *AuthentikClient) RemoveUserFromGroup(ctx *gin.Context, groupID string, userID string) error {
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
-	// User ID provided to opal is user's primary key
+	// The user ID provided by Opal is the user's primary key in Authentik
 	userPK, err := strconv.Atoi(userID)
 	if err != nil {
 		return err
@@ -155,7 +155,7 @@ func (c *AuthentikClient) RemoveUserFromGroup(ctx *gin.Context, groupID string, 
 
 	resp, err := c.client.CoreApi.CoreGroupsRemoveUserCreate(ctxWithAuth, groupID).UserAccountRequest(*userAccountRequest).Execute()
 	if err != nil {
-		return &ClientError{StatusCode: resp.StatusCode, Message: "Failed to add user to group!", innerError: err}
+		return &ClientError{StatusCode: resp.StatusCode, Message: "failed to remove user from group in authentik", innerError: err}
 	}
 
 	return err
