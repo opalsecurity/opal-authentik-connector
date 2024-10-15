@@ -49,7 +49,7 @@ func (api *GroupsAPI) AddGroupMemberGroup(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{})
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // Post /groups/:group_id/resources
@@ -212,7 +212,7 @@ func (api *GroupsAPI) RemoveGroupMemberGroup(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{})
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // Delete /groups/:group_id/resources/:resource_id
