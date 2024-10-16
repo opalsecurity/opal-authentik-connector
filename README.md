@@ -39,7 +39,7 @@ Set whatever username you’d like, disable “Create Group” and “Expiring�
 
 ![Screenshot 2024-10-10 at 11.21.45 AM.png](assets/opal_service_account_2.png)
 
-Go to Directory → Users and open OpalServiceAccount
+Go to Directory → Users and open the service account
 
 ![Screenshot 2024-10-10 at 5.39.02 PM.png](assets/opal_service_account_3.png)
 
