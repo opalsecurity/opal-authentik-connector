@@ -107,6 +107,28 @@ func (c *AuthentikClient) PaginatedListGroups(ctx *gin.Context) (groups []authen
 	return paginatedGroups.Results, getNextCursorFromPagination(paginatedGroups.Pagination), nil
 }
 
+func (c *AuthentikClient) ListChildrenGroups(ctx *gin.Context, groupID string) (memberGroups []*authentik.Group, err error) {
+	ctxWithAuth := c.addAuthTokenToCtx(ctx)
+	usedByModels, resp, err := c.client.CoreApi.CoreGroupsUsedByList(ctxWithAuth, groupID).Execute()
+	if err != nil {
+		return nil, &ClientError{StatusCode: resp.StatusCode, Message: "failed to get children groups for group from Authentik", innerError: err}
+	}
+
+	memberGroups = make([]*authentik.Group, 0)
+	for _, usedByModel := range usedByModels {
+		if usedByModel.ModelName == "group" {
+			group, err := c.GetGroup(ctx, usedByModel.Pk)
+			if err != nil {
+				return nil, err
+			}
+
+			memberGroups = append(memberGroups, group)
+		}
+	}
+
+	return memberGroups, nil
+}
+
 func (c *AuthentikClient) GetGroupUsers(ctx *gin.Context, groupID string) (members []authentik.GroupMember, err error) {
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 	group, resp, err := c.client.CoreApi.CoreGroupsRetrieve(ctxWithAuth, groupID).IncludeUsers(true).Execute()

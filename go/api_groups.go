@@ -34,7 +34,7 @@ func (api *GroupsAPI) AddGroupMemberGroup(c *gin.Context) {
 
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		return
 	}
 
@@ -44,7 +44,7 @@ func (api *GroupsAPI) AddGroupMemberGroup(c *gin.Context) {
 		if errors.As(err, &clientErr) {
 			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
 		} else {
-			c.JSON(500, buildRespFromErr(err, 500))
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		}
 		return
 	}
@@ -159,6 +159,41 @@ func (api *GroupsAPI) GetGroupUsers(c *gin.Context) {
 	})
 }
 
+// Get /groups/:group_id/member-groups
+func (api *GroupsAPI) GetGroupMemberGroups(c *gin.Context) {
+	groupID := c.Param("group_id")
+
+	authentik, err := NewAuthentikClient()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
+		return
+	}
+
+	authentikMemberGroups, err := authentik.ListChildrenGroups(c, groupID)
+	if err != nil {
+		var clientErr *ClientError
+		if errors.As(err, &clientErr) {
+			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
+		} else {
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
+		}
+		return
+	}
+
+	memberGroups := make([]GroupMemberGroup, 0)
+	for _, authentikGroup := range authentikMemberGroups {
+		group := toGroupMemberGroup(authentikGroup)
+		memberGroups = append(memberGroups, *group)
+	}
+
+	// Do not support pagination for this endpoint for Authentik
+	nextCursor := ""
+	c.JSON(http.StatusOK, GroupMemberGroupsResponse{
+		NextCursor: &nextCursor,
+		Groups:     memberGroups,
+	})
+}
+
 // Get /groups
 func (api *GroupsAPI) GetGroups(c *gin.Context) {
 	authentik, err := NewAuthentikClient()
@@ -197,7 +232,7 @@ func (api *GroupsAPI) RemoveGroupMemberGroup(c *gin.Context) {
 
 	authentik, err := NewAuthentikClient()
 	if err != nil {
-		c.JSON(500, buildRespFromErr(err, 500))
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		return
 	}
 
@@ -207,7 +242,7 @@ func (api *GroupsAPI) RemoveGroupMemberGroup(c *gin.Context) {
 		if errors.As(err, &clientErr) {
 			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
 		} else {
-			c.JSON(500, buildRespFromErr(err, 500))
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
 		}
 		return
 	}
@@ -254,5 +289,13 @@ func toOpalGroup(group *authentik.Group) *Group {
 		Id:   group.GetPk(),
 		Name: group.GetName(),
 		// Description is not available for authentik groups
+	}
+}
+
+func toGroupMemberGroup(group *authentik.Group) *GroupMemberGroup {
+	return &GroupMemberGroup{
+		GroupId:     group.GetPk(),
+		Name:        group.GetName(),
+		Description: group.GetName(),
 	}
 }
