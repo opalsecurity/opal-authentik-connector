@@ -60,7 +60,7 @@ Click “Create”
 
 ![Screenshot 2024-10-10 at 11.24.53 AM.png](assets/opal_service_account_6.png)
 
-Use any identifier you’d like, make sure “User” is set to the service account created above, “Intent” is “API Token” and “Expiring” is set to off as we have no method to refresh tokens
+Use any identifier you’d like, make sure “User” is set to the service account created above, “Intent” is “API Token” and “Expiring” is set to off
 
 ![Screenshot 2024-10-10 at 11.26.28 AM.png](assets/opal_service_account_7.png)
 
