@@ -549,7 +549,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GroupMemberGroupResponse'
+                $ref: '#/components/schemas/GroupMemberGroupsResponse'
           description: The member groups for the specified group
         "401":
           content:
@@ -1351,25 +1351,47 @@ components:
       required:
       - resources
       type: object
-    GroupMemberGroupResponse:
+    GroupMemberGroup:
+      example:
+        group_id: f454d283-ca67-4a8a-bdbb-df212eca5353
+        name: A Test Group
+        description: Test Group Description
+      properties:
+        group_id:
+          description: 
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          type: string
+        name:
+          description:
+          example: Test Group
+          type: string
+        description: 
+          description:
+          example: Test Group Description
+          type: string
+    GroupMemberGroupsResponse:
       example:
         next_cursor: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
-        group_id: f454d283-ca67-4a8a-bdbb-df212eca5353
+        groups:
+          - group_id: f454d283-ca67-4a8a-bdbb-df212eca5353
+            name: A Test Group
+            description: Test Group Description
       properties:
         next_cursor:
-          description: The cursor with which to continue pagination if additional
+          description:
+            The cursor with which to continue pagination if additional
             result pages exist.
           example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
           nullable: true
           type: string
         groups:
           items:
-            $ref: '#/components/schemas/GroupMemberGroupResponse_groups_inner'
+            $ref: "#/components/schemas/GroupMemberGroup"
           type: array
-      required:
-      - groups
-      - next_cursor
       type: object
+      required:
+        - groups
+        - next_cursor
     addResourceUser_request:
       properties:
         user_id:
@@ -1417,15 +1439,3 @@ components:
       required:
       - app_id
       - resource_id
-    GroupMemberGroupResponse_groups_inner:
-      properties:
-        group_id:
-          example: f454d283-ca67-4a8a-bdbb-df212eca5353
-          type: string
-        name:
-          example: Test Group
-          type: string
-        description:
-          example: Test Group Description
-          type: string
-      type: object

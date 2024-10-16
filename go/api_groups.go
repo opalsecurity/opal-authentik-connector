@@ -180,15 +180,15 @@ func (api *GroupsAPI) GetGroupMemberGroups(c *gin.Context) {
 		return
 	}
 
-	memberGroups := make([]GroupMemberGroupResponseGroupsInner, 0)
+	memberGroups := make([]GroupMemberGroup, 0)
 	for _, authentikGroup := range authentikMemberGroups {
-		group := toGroupMemberGroupResponseInner(authentikGroup)
+		group := toGroupMemberGroup(authentikGroup)
 		memberGroups = append(memberGroups, *group)
 	}
 
 	// Do not support pagination for this endpoint for Authentik
 	nextCursor := ""
-	c.JSON(http.StatusOK, GroupMemberGroupResponse{
+	c.JSON(http.StatusOK, GroupMemberGroupsResponse{
 		NextCursor: &nextCursor,
 		Groups:     memberGroups,
 	})
@@ -292,8 +292,8 @@ func toOpalGroup(group *authentik.Group) *Group {
 	}
 }
 
-func toGroupMemberGroupResponseInner(group *authentik.Group) *GroupMemberGroupResponseGroupsInner {
-	return &GroupMemberGroupResponseGroupsInner{
+func toGroupMemberGroup(group *authentik.Group) *GroupMemberGroup {
+	return &GroupMemberGroup{
 		GroupId:     group.GetPk(),
 		Name:        group.GetName(),
 		Description: group.GetName(),

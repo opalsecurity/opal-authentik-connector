@@ -9,10 +9,10 @@
 
 package openapi
 
-type GroupMemberGroupResponseGroupsInner struct {
-	GroupId string `json:"group_id,omitempty"`
+type GroupMemberGroupsResponse struct {
 
-	Name string `json:"name,omitempty"`
+	// The cursor with which to continue pagination if additional result pages exist.
+	NextCursor *string `json:"next_cursor"`
 
-	Description string `json:"description,omitempty"`
+	Groups []GroupMemberGroup `json:"groups"`
 }
