@@ -78,7 +78,12 @@ Go to Custom → Custom App
 
 ![Screenshot 2024-10-10 at 12.01.41 PM.png](assets/opal_custom_connector_1.png)
 
-Select “Use custom app connector”, set the identifier to whatever you’d like, and set “Base URL” to the URL where your Authentik Custom Connector is hosted.
+Configure the app name, app admin and description. 
+Upload the Authentik icon as the app icon, you can find the icon under `assets/authentik.png`.
+
+![Screenshot 2024-10-10 at 12.06.02 PM.png](assets/opal_custom_connector_4.png)
+
+Select “Use custom app connector”, set the identifier to whatever you’d like, and set “Base URL” to the host name (with protocol) where your custom connector is hosted, e.g `https://examplehostname.com`
 
 ![Screenshot 2024-10-10 at 12.02.54 PM.png](assets/opal_custom_connector_2.png)
 
