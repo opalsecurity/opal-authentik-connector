@@ -14,6 +14,8 @@ const (
 	AuthentikTokenEnvKey  = "AUTHENTIK_TOKEN"
 	AuthentikHostEnvKey   = "AUTHENTIK_HOST"
 	AuthentikSchemeEnvKey = "AUTHENTIK_SCHEME"
+	CFAccessClientID      = "CLOUDFLARE_ACCESS_CLIENT_ID"
+	CFAccessClientSecret  = "CLOUDFLARE_ACCESS_CLIENT_SECRET"
 )
 
 const PageQueryParam = "cursor"
@@ -70,6 +72,21 @@ func NewAuthentikClient() (*AuthentikClient, error) {
 	configuration := authentik.NewConfiguration()
 	configuration.Host = os.Getenv(AuthentikHostEnvKey)
 	configuration.Scheme = os.Getenv(AuthentikSchemeEnvKey)
+	// Add Cloudflare Access token headers to the default headers
+	clientID := os.Getenv("CF_ACCESS_CLIENT_ID")
+	clientSecret := os.Getenv("CF_ACCESS_CLIENT_SECRET")
+
+	if os.Getenv("DEBUG") != "" {
+		configuration.Debug = true
+	}
+
+	if clientID == "" || clientSecret == "" {
+		return nil, errors.Errorf("Cloudflare Access credentials are not set!")
+	}
+
+	// Use AddDefaultHeader to include the Cloudflare headers globally
+	configuration.AddDefaultHeader("CF-Access-Client-Id", clientID)
+	configuration.AddDefaultHeader("CF-Access-Client-Secret", clientSecret)
 
 	return &AuthentikClient{
 		token:  token,
@@ -86,7 +103,11 @@ func (c *AuthentikClient) PaginatedListUsers(ctx *gin.Context) (users []authenti
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 	paginatedUsers, resp, err := c.client.CoreApi.CoreUsersList(ctxWithAuth).Page(page).PageSize(DefaultPageSize).Execute()
 	if err != nil {
-		return nil, "", &ClientError{StatusCode: resp.StatusCode, Message: "failed to list users from Authentik", innerError: err}
+		statusCode := 500
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+		return nil, "", &ClientError{StatusCode: statusCode, Message: "failed to list users from Authentik", innerError: err}
 	}
 
 	return paginatedUsers.Results, getNextCursorFromPagination(paginatedUsers.Pagination), nil
@@ -100,8 +121,12 @@ func (c *AuthentikClient) PaginatedListGroups(ctx *gin.Context) (groups []authen
 
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 	paginatedGroups, resp, err := c.client.CoreApi.CoreGroupsList(ctxWithAuth).Page(page).PageSize(DefaultPageSize).Execute()
+	statusCode := 500
+	if resp != nil {
+		statusCode = resp.StatusCode
+	}
 	if err != nil {
-		return nil, "", &ClientError{StatusCode: resp.StatusCode, Message: "failed to list groups from Authentik", innerError: err}
+		return nil, "", &ClientError{StatusCode: statusCode, Message: "failed to list groups from Authentik", innerError: err}
 	}
 
 	return paginatedGroups.Results, getNextCursorFromPagination(paginatedGroups.Pagination), nil
@@ -111,7 +136,11 @@ func (c *AuthentikClient) ListChildrenGroups(ctx *gin.Context, groupID string) (
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 	usedByModels, resp, err := c.client.CoreApi.CoreGroupsUsedByList(ctxWithAuth, groupID).Execute()
 	if err != nil {
-		return nil, &ClientError{StatusCode: resp.StatusCode, Message: "failed to get children groups for group from Authentik", innerError: err}
+		statusCode := 500
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+		return nil, &ClientError{StatusCode: statusCode, Message: "failed to get children groups for group from Authentik", innerError: err}
 	}
 
 	memberGroups = make([]*authentik.Group, 0)
@@ -133,7 +162,11 @@ func (c *AuthentikClient) GetGroupUsers(ctx *gin.Context, groupID string) (membe
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 	group, resp, err := c.client.CoreApi.CoreGroupsRetrieve(ctxWithAuth, groupID).IncludeUsers(true).Execute()
 	if err != nil {
-		return nil, &ClientError{StatusCode: resp.StatusCode, Message: "failed to get users for group from Authentik", innerError: err}
+		statusCode := 500
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+		return nil, &ClientError{StatusCode: statusCode, Message: "failed to get users for group from Authentik", innerError: err}
 	}
 
 	return group.UsersObj, nil
@@ -143,7 +176,11 @@ func (c *AuthentikClient) GetGroup(ctx *gin.Context, groupID string) (group *aut
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
 	group, resp, err := c.client.CoreApi.CoreGroupsRetrieve(ctxWithAuth, groupID).IncludeUsers(false).Execute()
 	if err != nil {
-		return nil, &ClientError{StatusCode: resp.StatusCode, Message: "failed to get group from authentik", innerError: err}
+		statusCode := 500
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+		return nil, &ClientError{StatusCode: statusCode, Message: "failed to get group from authentik", innerError: err}
 	}
 
 	return group, nil
@@ -160,7 +197,11 @@ func (c *AuthentikClient) AddUserToGroup(ctx *gin.Context, groupID string, userI
 
 	resp, err := c.client.CoreApi.CoreGroupsAddUserCreate(ctxWithAuth, groupID).UserAccountRequest(*userAccountRequest).Execute()
 	if err != nil {
-		return &ClientError{StatusCode: resp.StatusCode, Message: "failed to add user to group in Authentik", innerError: err}
+		statusCode := 500
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+		return &ClientError{StatusCode: statusCode, Message: "failed to add user to group in Authentik", innerError: err}
 	}
 
 	return err
@@ -177,7 +218,11 @@ func (c *AuthentikClient) RemoveUserFromGroup(ctx *gin.Context, groupID string, 
 
 	resp, err := c.client.CoreApi.CoreGroupsRemoveUserCreate(ctxWithAuth, groupID).UserAccountRequest(*userAccountRequest).Execute()
 	if err != nil {
-		return &ClientError{StatusCode: resp.StatusCode, Message: "failed to remove user from group in authentik", innerError: err}
+		statusCode := 500
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+		return &ClientError{StatusCode: statusCode, Message: "failed to remove user from group in authentik", innerError: err}
 	}
 
 	return err
@@ -195,7 +240,11 @@ func (c *AuthentikClient) AddGroupToGroup(ctx *gin.Context, containingGroupID st
 		},
 	).Execute()
 	if err != nil {
-		return &ClientError{StatusCode: resp.StatusCode, Message: "Failed to add member group to containing group!", innerError: err}
+		statusCode := 500
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+		return &ClientError{StatusCode: statusCode, Message: "Failed to add member group to containing group!", innerError: err}
 	}
 
 	return nil
@@ -213,7 +262,11 @@ func (c *AuthentikClient) RemoveGroupFromGroup(ctx *gin.Context, containingGroup
 		},
 	).Execute()
 	if err != nil {
-		return &ClientError{StatusCode: resp.StatusCode, Message: "Failed to remove member group from containing group!", innerError: err}
+		statusCode := 500
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+		return &ClientError{StatusCode: statusCode, Message: "Failed to remove member group from containing group!", innerError: err}
 	}
 
 	return nil
