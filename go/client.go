@@ -72,6 +72,7 @@ func NewAuthentikClient() (*AuthentikClient, error) {
 	configuration := authentik.NewConfiguration()
 	configuration.Host = os.Getenv(AuthentikHostEnvKey)
 	configuration.Scheme = os.Getenv(AuthentikSchemeEnvKey)
+
 	// Add Cloudflare Access token headers to the default headers
 	clientID := os.Getenv("CF_ACCESS_CLIENT_ID")
 	clientSecret := os.Getenv("CF_ACCESS_CLIENT_SECRET")
@@ -282,7 +283,7 @@ func getNextCursorFromPagination(pagination authentik.Pagination) string {
 		return ""
 	}
 
-	return strconv.FormatFloat(float64(pagination.Next), 'g', 1, 32)
+	return strconv.FormatFloat(float64(pagination.Next), 'f', 0, 32)
 }
 
 func getPageFromCtx(ctx *gin.Context) (int32, error) {
