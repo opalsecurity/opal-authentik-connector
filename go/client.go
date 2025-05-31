@@ -73,21 +73,9 @@ func NewAuthentikClient() (*AuthentikClient, error) {
 	configuration.Host = os.Getenv(AuthentikHostEnvKey)
 	configuration.Scheme = os.Getenv(AuthentikSchemeEnvKey)
 
-	// Add Cloudflare Access token headers to the default headers
-	clientID := os.Getenv("CF_ACCESS_CLIENT_ID")
-	clientSecret := os.Getenv("CF_ACCESS_CLIENT_SECRET")
-
 	if os.Getenv("DEBUG") != "" {
 		configuration.Debug = true
 	}
-
-	if clientID == "" || clientSecret == "" {
-		return nil, errors.Errorf("Cloudflare Access credentials are not set!")
-	}
-
-	// Use AddDefaultHeader to include the Cloudflare headers globally
-	configuration.AddDefaultHeader("CF-Access-Client-Id", clientID)
-	configuration.AddDefaultHeader("CF-Access-Client-Secret", clientSecret)
 
 	return &AuthentikClient{
 		token:  token,
@@ -271,6 +259,23 @@ func (c *AuthentikClient) RemoveGroupFromGroup(ctx *gin.Context, containingGroup
 	}
 
 	return nil
+}
+
+func (c *AuthentikClient) CreateUser(ctx *gin.Context, request authentik.UserRequest) (*string, error) {
+	ctxWithAuth := c.addAuthTokenToCtx(ctx)
+
+	createUserResponse, resp, err := c.client.CoreApi.CoreUsersCreate(ctxWithAuth).UserRequest(request).Execute()
+	if err != nil {
+		statusCode := 500
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+		return nil, &ClientError{StatusCode: statusCode, Message: "Failed to create user in Authentik", innerError: err}
+	}
+
+	userRemoteID := strconv.Itoa(int(createUserResponse.GetPk()))
+
+	return &userRemoteID, nil
 }
 
 func (c *AuthentikClient) addAuthTokenToCtx(ctx *gin.Context) context.Context {

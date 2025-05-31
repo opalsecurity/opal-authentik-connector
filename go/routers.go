@@ -198,6 +198,12 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			"/users",
 			handleFunctions.UsersAPI.GetUsers,
 		},
+		{
+			"CreateUser",
+			http.MethodPost,
+			"/users",
+			handleFunctions.UsersAPI.CreateUser,
+		},
 	}
 }
 

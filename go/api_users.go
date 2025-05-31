@@ -11,6 +11,7 @@ package openapi
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -19,6 +20,37 @@ import (
 )
 
 type UsersAPI struct {
+}
+
+// Post /users
+func (api *UsersAPI) CreateUser(c *gin.Context) {
+	var createUserRequest CreateUserRequest
+	err := c.BindJSON(&createUserRequest)
+	if err != nil {
+		c.JSON(401, buildRespFromErr(err, 401))
+		return
+	}
+
+	authentik, err := NewAuthentikClient()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
+		return
+	}
+
+	userRemoteID, err := authentik.CreateUser(c, toAuthentikUserRequest(createUserRequest))
+	if err != nil {
+		var clientErr *ClientError
+		if errors.As(err, &clientErr) {
+			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
+		} else {
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, &CreateUserResponse{
+		RemoteUserId: *userRemoteID,
+	})
 }
 
 // Get /users
@@ -62,5 +94,17 @@ func toOpalUser(user authentik.User) *User {
 	return &User{
 		Id:    strconv.Itoa(int(user.GetPk())),
 		Email: user.GetEmail(),
+	}
+}
+
+func toAuthentikUserRequest(request CreateUserRequest) authentik.UserRequest {
+	isActive := true
+	email := request.Attributes.Email
+
+	return authentik.UserRequest{
+		Username: request.Attributes.Email,
+		Name:     fmt.Sprintf("%s %s", request.Attributes.FirstName, request.Attributes.LastName),
+		IsActive: &isActive,
+		Email:    &email,
 	}
 }

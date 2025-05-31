@@ -2,577 +2,501 @@ openapi: 3.0.3
 info:
   title: Opal Custom App Connector API
   version: "1.0"
-servers:
-- url: /
 paths:
   /status:
     get:
       description: Returns the status of the custom connector API.
       operationId: getStatus
       parameters:
-      - description: The identifier of your custom app.
-        example: my-custom-app
-        explode: true
-        in: query
-        name: app_id
-        required: true
-        schema:
-          type: string
-        style: form
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           description: The status of the custom connector API.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         default:
+          $ref: "#/components/responses/UnexpectedError"
+      tags:
+        - status
+  /users:
+    post:
+      description: Creates a user in your custom connector app
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  description: The ID of the user to create in your custom connector app.
+                  example: 123
+                  type: string
+                attributes:
+                  description: The attributes of the user to create in your custom connector app.
+                  $ref: "#/components/schemas/UserAttributes"
+                manager:
+                  description: The manager of the user to create in your custom connector app.
+                  $ref: "#/components/schemas/UserAttributes"
+                user_tags:
+                  description: The tags of the user that were ingested by Opal
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/UserTagAttributes"
+      responses:
+        "200":
+          description: The user was successfully added to the custom connector app.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+                $ref: "#/components/schemas/CreateUserResponse"
+        "401":
+          $ref: "#/components/responses/InvalidRequestSignatureError"
+        "404":
+          $ref: "#/components/responses/EntityNotFoundError"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - status
-  /users:
+        - users
     get:
       description: Returns a list of users for your custom connector app.
       operationId: getUsers
       parameters:
-      - description: The pagination cursor value.
-        example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
-        explode: true
-        in: query
-        name: cursor
-        required: false
-        schema:
-          type: string
-        style: form
-      - description: The identifier of your custom app.
-        example: my-custom-app
-        explode: true
-        in: query
-        name: app_id
-        required: true
-        schema:
-          type: string
-        style: form
+        - description: The pagination cursor value.
+          example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
+          explode: true
+          in: query
+          name: cursor
+          required: false
+          schema:
+            type: string
+          style: form
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UsersResponse'
+                $ref: "#/components/schemas/UsersResponse"
           description: One page of users that exist for your custom app.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - users
+        - users
   /resources:
     get:
       description: Returns a list of resources for your organization.
       operationId: getResources
       parameters:
-      - description: The pagination cursor value.
-        example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
-        explode: true
-        in: query
-        name: cursor
-        required: false
-        schema:
-          type: string
-        style: form
-      - description: The identifier of your custom app.
-        example: my-custom-app
-        explode: true
-        in: query
-        name: app_id
-        required: true
-        schema:
-          type: string
-        style: form
+        - description: The pagination cursor value.
+          example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
+          explode: true
+          in: query
+          name: cursor
+          required: false
+          schema:
+            type: string
+          style: form
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
+        - description: For connectors that support hierarchical resources, this param will be passed to get the children of the specified parent resource.
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          explode: true
+          in: query
+          name: parent_id
+          required: false
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResourcesResponse'
+                $ref: "#/components/schemas/ResourcesResponse"
           description: One page of resources that exist for your custom app.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - resources
+        - resources
   /resources/{resource_id}:
     get:
       description: Get a specific resource by its id.
       operationId: getResource
       parameters:
-      - description: The id of the resource to fetch.
-        example: f454d283-ca67-4a8a-bdbb-df212eca5353
-        explode: false
-        in: path
-        name: resource_id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The identifier of your custom app.
-        example: my-custom-app
-        explode: true
-        in: query
-        name: app_id
-        required: true
-        schema:
-          type: string
-        style: form
+        - description: The id of the resource to fetch.
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: false
+          name: resource_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResourceResponse'
+                $ref: "#/components/schemas/ResourceResponse"
           description: The resource that was requested.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The entity was not found.
+          $ref: "#/components/responses/EntityNotFoundError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - resources
+        - resources
   /resources/{resource_id}/access_levels:
     get:
       description: Get the access level list of a resource.
       operationId: getResourceAccessLevels
       parameters:
-      - description: The id of the resource
-        example: f454d283-ca67-4a8a-bdbb-df212eca5353
-        explode: false
-        in: path
-        name: resource_id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The pagination cursor value.
-        example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
-        explode: true
-        in: query
-        name: cursor
-        required: false
-        schema:
-          type: string
-        style: form
-      - description: The identifier of your custom app.
-        example: my-custom-app
-        explode: true
-        in: query
-        name: app_id
-        required: true
-        schema:
-          type: string
-        style: form
+        - description: The id of the resource
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: false
+          name: resource_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The pagination cursor value.
+          example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
+          explode: true
+          in: query
+          name: cursor
+          required: false
+          schema:
+            type: string
+          style: form
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResourceAccessLevelsResponse'
+                $ref: "#/components/schemas/ResourceAccessLevelsResponse"
           description: One page of access levels for the resource in question.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The entity was not found.
+          $ref: "#/components/responses/EntityNotFoundError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - resources
+        - resources
   /resources/{resource_id}/users:
     get:
       description: Get the user access list of a resource.
       operationId: getResourceUsers
       parameters:
-      - description: The id of the resource
-        example: f454d283-ca67-4a8a-bdbb-df212eca5353
-        explode: false
-        in: path
-        name: resource_id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The pagination cursor value.
-        example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
-        explode: true
-        in: query
-        name: cursor
-        required: false
-        schema:
-          type: string
-        style: form
-      - description: The identifier of your custom app.
-        example: my-custom-app
-        explode: true
-        in: query
-        name: app_id
-        required: true
-        schema:
-          type: string
-        style: form
+        - description: The id of the resource
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: false
+          name: resource_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The pagination cursor value.
+          example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
+          explode: true
+          in: query
+          name: cursor
+          required: false
+          schema:
+            type: string
+          style: form
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResourceUsersResponse'
+                $ref: "#/components/schemas/ResourceUsersResponse"
           description: One page of users with access to the resource in question.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The entity was not found.
+          $ref: "#/components/responses/EntityNotFoundError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - resources
+        - resources
     post:
       description: Adds a user to the access list of the specified resource.
       operationId: addResourceUser
       parameters:
-      - description: The id of the resource.
-        example: f454d283-ca67-4a8a-bdbb-df212eca5353
-        explode: false
-        in: path
-        name: resource_id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - description: The id of the resource.
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: false
+          name: resource_id
+          required: true
+          schema:
+            type: string
+          style: simple
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/addResourceUser_request'
-        required: true
+              properties:
+                user_id:
+                  description: The ID of the user to add.
+                  example: 123
+                  type: string
+                app_id:
+                  description: The identifier of your custom app.
+                  example: my-custom-app
+                  type: string
+                access_level_id:
+                  description: The ID of the access level to assign to the user.
+                  example: 123
+                  type: string
+              required:
+                - user_id
+                - app_id
       responses:
         "200":
           description: The user was successfully added to the resource.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The entity was not found.
+          $ref: "#/components/responses/EntityNotFoundError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - resources
+        - resources
   /resources/{resource_id}/users/{user_id}:
     delete:
       description: Remove a user from the access list of the specified resource.
       operationId: removeResourceUser
       parameters:
-      - description: The id of the resource.
-        example: f454d283-ca67-4a8a-bdbb-df212eca5353
-        explode: false
-        in: path
-        name: resource_id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The id of the user.
-        example: 123
-        explode: true
-        in: path
-        name: user_id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The identifier of your custom app.
-        example: my-custom-app
-        explode: true
-        in: query
-        name: app_id
-        required: true
-        schema:
-          type: string
-        style: form
-      - description: The access level identifier.
-        example: 123
-        explode: true
-        in: query
-        name: access_level_id
-        required: false
-        schema:
-          type: string
-        style: form
+        - description: The id of the resource.
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: false
+          name: resource_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The id of the user.
+          example: 123
+          explode: true
+          in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
+        - description: The access level identifier.
+          example: 123
+          explode: true
+          in: query
+          name: access_level_id
+          required: false
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           description: The user was successfully removed from the resource.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The entity was not found.
+          $ref: "#/components/responses/EntityNotFoundError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - resources
+        - resources
   /groups:
     get:
       description: Returns a list of groups for your organization.
       operationId: getGroups
       parameters:
-      - description: The pagination cursor value.
-        example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
-        explode: true
-        in: query
-        name: cursor
-        required: false
-        schema:
-          type: string
-        style: form
-      - description: The identifier of your custom app.
-        example: my-custom-app
-        explode: true
-        in: query
-        name: app_id
-        required: true
-        schema:
-          type: string
-        style: form
+        - description: The pagination cursor value.
+          example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
+          explode: true
+          in: query
+          name: cursor
+          required: false
+          schema:
+            type: string
+          style: form
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GroupsResponse'
+                $ref: "#/components/schemas/GroupsResponse"
           description: One page of groups that exist for your custom app.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - groups
+        - groups
   /groups/{group_id}:
     get:
       description: Returns a group for your organization.
       operationId: getGroup
       parameters:
-      - description: The id of the group.
-        example: f454d283-ca67-4a8a-bdbb-df212eca5353
-        explode: true
-        in: path
-        name: group_id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The identifier of your custom app.
-        example: my-custom-app
-        explode: true
-        in: query
-        name: app_id
-        required: true
-        schema:
-          type: string
-        style: form
+        - description: The id of the group.
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: true
+          name: group_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GroupResponse'
+                $ref: "#/components/schemas/GroupResponse"
           description: The group that exists for your custom app.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The entity was not found.
+          $ref: "#/components/responses/EntityNotFoundError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - groups
+        - groups
   /groups/{group_id}/member-groups:
     get:
       description: Get member groups for the specified group
       operationId: getGroupMemberGroups
       parameters:
-      - description: The ID of the parent group
-        example: f454d283-ca67-4a8a-bdbb-df212eca5353
-        explode: true
-        in: path
-        name: group_id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The pagination cursor value.
-        example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
-        explode: true
-        in: query
-        name: cursor
-        required: false
-        schema:
-          type: string
-        style: form
-      - description: The identifier of your custom app.
-        example: my-custom-app
-        explode: true
-        in: query
-        name: app_id
-        required: true
-        schema:
-          type: string
-        style: form
+        - description: The ID of the parent group
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: true
+          name: group_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The pagination cursor value.
+          example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
+          explode: true
+          in: query
+          name: cursor
+          required: false
+          schema:
+            type: string
+          style: form
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GroupMemberGroupsResponse'
+                $ref: "#/components/schemas/GroupMemberGroupsResponse"
           description: The member groups for the specified group
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The entity was not found.
+          $ref: "#/components/responses/EntityNotFoundError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - groups
+        - groups
     post:
       description: Add a member group to the specified group
       operationId: addGroupMemberGroup
@@ -605,15 +529,13 @@ paths:
                 - app_id
       responses:
         "200":
-          description: The group was successfully added to the group.
+          description: The member group was successfully added to the group.
         "401":
           $ref: "#/components/responses/InvalidRequestSignatureError"
         "404":
           $ref: "#/components/responses/EntityNotFoundError"
         default:
           $ref: "#/components/responses/UnexpectedError"
-      security:
-        - BearerAuth: []
       tags:
         - groups
   /groups/{group_id}/member-groups/{member_group_id}:
@@ -657,8 +579,6 @@ paths:
           $ref: "#/components/responses/EntityNotFoundError"
         default:
           $ref: "#/components/responses/UnexpectedError"
-      security:
-        - BearerAuth: []
       tags:
         - groups
   /groups/{group_id}/users:
@@ -666,368 +586,361 @@ paths:
       description: Returns a list of users for the specified group.
       operationId: getGroupUsers
       parameters:
-      - description: The id of the group.
-        example: f454d283-ca67-4a8a-bdbb-df212eca5353
-        explode: true
-        in: path
-        name: group_id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The pagination cursor value.
-        example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
-        explode: true
-        in: query
-        name: cursor
-        required: false
-        schema:
-          type: string
-        style: form
-      - description: The identifier of your custom app.
-        example: my-custom-app
-        explode: true
-        in: query
-        name: app_id
-        required: true
-        schema:
-          type: string
-        style: form
+        - description: The id of the group.
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: true
+          name: group_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The pagination cursor value.
+          example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
+          explode: true
+          in: query
+          name: cursor
+          required: false
+          schema:
+            type: string
+          style: form
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GroupUsersResponse'
+                $ref: "#/components/schemas/GroupUsersResponse"
           description: One page of users that exist for your custom app.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The entity was not found.
+          $ref: "#/components/responses/EntityNotFoundError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - groups
+        - groups
     post:
       description: Adds a user to the specified group.
       operationId: addGroupUser
       parameters:
-      - description: The id of the group.
-        example: f454d283-ca67-4a8a-bdbb-df212eca5353
-        explode: true
-        in: path
-        name: group_id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - description: The id of the group.
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: true
+          name: group_id
+          required: true
+          schema:
+            type: string
+          style: simple
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/addGroupUser_request'
-        required: true
+              properties:
+                user_id:
+                  description: The id of the user.
+                  example: 123
+                  type: string
+                app_id:
+                  description: The identifier of your custom app.
+                  example: my-custom-app
+                  type: string
+              required:
+                - user_id
+                - app_id
       responses:
         "200":
           description: The user was successfully added to the group.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The entity was not found.
+          $ref: "#/components/responses/EntityNotFoundError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - groups
+        - groups
   /groups/{group_id}/users/{user_id}:
     delete:
       description: Removes a user from the specified group.
       operationId: removeGroupUser
       parameters:
-      - description: The id of the group.
-        example: f454d283-ca67-4a8a-bdbb-df212eca5353
-        explode: true
-        in: path
-        name: group_id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The id of the user.
-        example: 123
-        explode: true
-        in: path
-        name: user_id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The identifier of your custom app.
-        example: my-custom-app
-        explode: true
-        in: query
-        name: app_id
-        required: true
-        schema:
-          type: string
-        style: form
+        - description: The id of the group.
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: true
+          name: group_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The id of the user.
+          example: 123
+          explode: true
+          in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           description: The user was successfully removed from the group.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The entity was not found.
+          $ref: "#/components/responses/EntityNotFoundError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - groups
+        - groups
   /groups/{group_id}/resources:
     get:
       description: Returns a list of resources for the specified group.
       operationId: getGroupResources
       parameters:
-      - description: The id of the group.
-        example: f454d283-ca67-4a8a-bdbb-df212eca5353
-        explode: true
-        in: path
-        name: group_id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The pagination cursor value.
-        example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
-        explode: true
-        in: query
-        name: cursor
-        required: false
-        schema:
-          type: string
-        style: form
-      - description: The identifier of your custom app.
-        example: my-custom-app
-        explode: true
-        in: query
-        name: app_id
-        required: true
-        schema:
-          type: string
-        style: form
+        - description: The id of the group.
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: true
+          name: group_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The pagination cursor value.
+          example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
+          explode: true
+          in: query
+          name: cursor
+          required: false
+          schema:
+            type: string
+          style: form
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GroupResourcesResponse'
+                $ref: "#/components/schemas/GroupResourcesResponse"
           description: One page of resources that exist for your custom app.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The entity was not found.
+          $ref: "#/components/responses/EntityNotFoundError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - groups
+        - groups
     post:
       description: Adds a resource to the specified group.
       operationId: addGroupResource
       parameters:
-      - description: The id of the group.
-        example: f454d283-ca67-4a8a-bdbb-df212eca5353
-        explode: true
-        in: path
-        name: group_id
-        required: true
-        schema:
-          type: string
-        style: simple
+        - description: The id of the group.
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: true
+          name: group_id
+          required: true
+          schema:
+            type: string
+          style: simple
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/addGroupResource_request'
-        required: true
+              properties:
+                resource_id:
+                  description: The id of the resource.
+                  example: 123
+                  type: string
+                app_id:
+                  description: The identifier of your custom app.
+                  example: my-custom-app
+                  type: string
+                access_level_id:
+                  description: The id of the access level.
+                  example: 123
+                  type: string
+              required:
+                - resource_id
+                - app_id
       responses:
         "200":
           description: The resource was successfully added to the group.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The entity was not found.
+          $ref: "#/components/responses/EntityNotFoundError"
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - groups
+        - groups
   /groups/{group_id}/resources/{resource_id}:
     delete:
       description: Removes a resource from the specified group.
       operationId: removeGroupResource
       parameters:
-      - description: The id of the group.
-        example: f454d283-ca67-4a8a-bdbb-df212eca5353
-        explode: true
-        in: path
-        name: group_id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The id of the resource.
-        example: 123
-        explode: true
-        in: path
-        name: resource_id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The identifier of your custom app.
-        example: my-custom-app
-        explode: true
-        in: query
-        name: app_id
-        required: true
-        schema:
-          type: string
-        style: form
-      - description: The access level identifier.
-        example: 123
-        explode: true
-        in: query
-        name: access_level_id
-        required: false
-        schema:
-          type: string
-        style: form
+        - description: The id of the group.
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
+          in: path
+          explode: true
+          name: group_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The id of the resource.
+          example: 123
+          explode: true
+          in: path
+          name: resource_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
+        - description: The access level identifier.
+          example: 123
+          explode: true
+          in: query
+          name: access_level_id
+          required: false
+          schema:
+            type: string
+          style: form
       responses:
         "200":
           description: The resource was successfully removed from the group.
         "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The request signature is invalid.
+          $ref: "#/components/responses/InvalidRequestSignatureError"
         "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The entity was not found.
+          $ref: "#/components/responses/EntityNotFoundError"
         default:
+          $ref: "#/components/responses/UnexpectedError"
+      tags:
+        - groups
+  /events:
+    get:
+      description: Lists events from your custom connector app.
+      operationId: getEvents
+      parameters:
+        - description: The pagination cursor value.
+          example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
+          explode: true
+          in: query
+          name: cursor
+          required: false
+          schema:
+            type: string
+          style: form
+        - description: The identifier of your custom app.
+          example: my-custom-app
+          explode: true
+          in: query
+          name: app_id
+          required: true
+          schema:
+            type: string
+          style: form
+        - description: Return events starting from this date
+          example: 2024-01-01T00:00:00Z
+          explode: true
+          in: query
+          name: start
+          required: false
+          schema:
+            format: date-time
+            type: string
+        - description: Return events ending before from this date
+          example: 2024-01-02T00:00:00Z
+          explode: true
+          in: query
+          name: end
+          required: false
+          schema:
+            format: date-time
+            type: string
+      responses:
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-          description: An unexpected error occurred.
-      security:
-      - BearerAuth: []
+                $ref: "#/components/schemas/EventsResponse"
+          description: One page of events that exist for your custom app within the specified time window
+        "401":
+          $ref: "#/components/responses/InvalidRequestSignatureError"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
       tags:
-      - groups
+        - events
 components:
   responses:
     EntityNotFoundError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
       description: The entity was not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
     InvalidRequestSignatureError:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
       description: The request signature is invalid.
-    UnexpectedError:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
+    UnexpectedError:
       description: An unexpected error occurred.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
   schemas:
     Error:
-      example:
-        code: 0
-        message: message
+      type: object
       properties:
         code:
           type: integer
         message:
           type: string
       required:
-      - code
-      - message
-      type: object
+        - code
+        - message
     Resource:
       example:
         id: f454d283-ca67-4a8a-bdbb-df212eca5353
@@ -1035,8 +948,7 @@ components:
         description: This resource represents the admin role.
       properties:
         id:
-          description: The id of the resource in your system. Opal will provide this
-            id when making requests for the resource to your connector.
+          description: The id of the resource in your system. Opal will provide this id when making requests for the resource to your connector.
           example: f454d283-ca67-4a8a-bdbb-df212eca5353
           type: string
         name:
@@ -1044,146 +956,151 @@ components:
           example: Admin Role
           type: string
         description:
-          description: "The description of the resource. If provided, it will be imported\
-            \ into Opal."
+          description: The description of the resource. If provided, it will be imported into Opal.
           example: This resource represents the admin role.
           type: string
-      required:
-      - id
-      - name
+        can_have_usage_data:
+          description: Whether the resource supports usage data.
+          example: true
+          nullable: true
+          type: boolean
       type: object
+      required:
+        - id
+        - name
     AccessLevel:
       example:
         id: f454d283-ca67-4a8a-bdbb-df212eca5353
         name: Admin
       properties:
         id:
-          description: The id of the access level in your system. Opal will provide
-            this id when making requests for the access level to your connector.
+          description: The id of the access level in your system. Opal will provide this id when making requests for the access level to your connector.
           example: f454d283-ca67-4a8a-bdbb-df212eca5353
           type: string
         name:
           description: The name of the access level
           example: Admin
           type: string
-      required:
-      - id
-      - name
       type: object
+      required:
+        - id
+        - name
     User:
       example:
         id: f454d283-ca67-4a8a-bdbb-df212eca5353
         email: john.doe@mycompany.com
       properties:
         id:
-          description: The id of the user in your system. Opal will provide this id
-            when making requests for the user to your connector.
+          description: The id of the user in your system. Opal will provide this id when making requests for the user to your connector.
           example: f454d283-ca67-4a8a-bdbb-df212eca5353
           type: string
         email:
-          description: The email of the user. Opal will use this to associate the
-            user with the corresponding Opal user.
+          description: The email of the user. Opal will use this to associate the user with the corresponding Opal user.
           example: john.doe@mycompany.com
           format: email
           type: string
-      required:
-      - email
-      - id
       type: object
+      required:
+        - id
+        - email
     ResourceResponse:
       example:
         resource:
-        - id: f454d283-ca67-4a8a-bdbb-df212eca5353
-          name: Admin
-          description: This resource represents the admin role.
+          - id: f454d283-ca67-4a8a-bdbb-df212eca5353
+            name: Admin
+            description: This resource represents the admin role.
       properties:
         resource:
-          $ref: '#/components/schemas/Resource'
-      required:
-      - resource
+          $ref: "#/components/schemas/Resource"
       type: object
+      required:
+        - resource
     UsersResponse:
       example:
         next_cursor: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
         users:
-        - id: f454d283-ca67-4a8a-bdbb-df212eca5353
-          email: john.doe@mycompnay.com
+          - id: f454d283-ca67-4a8a-bdbb-df212eca5353
+            email: john.doe@mycompnay.com
       properties:
         next_cursor:
-          description: The cursor with which to continue pagination if additional
+          description:
+            The cursor with which to continue pagination if additional
             result pages exist.
           example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
           nullable: true
           type: string
         users:
           items:
-            $ref: '#/components/schemas/User'
+            $ref: "#/components/schemas/User"
           type: array
-      required:
-      - users
       type: object
+      required:
+        - users
     ResourcesResponse:
       example:
         next_cursor: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
         resources:
-        - id: f454d283-ca67-4a8a-bdbb-df212eca5353
-          name: Admin
-          description: This resource represents the admin role.
+          - id: f454d283-ca67-4a8a-bdbb-df212eca5353
+            name: Admin
+            description: This resource represents the admin role.
       properties:
         next_cursor:
-          description: The cursor with which to continue pagination if additional
+          description:
+            The cursor with which to continue pagination if additional
             result pages exist.
           example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
           nullable: true
           type: string
         resources:
           items:
-            $ref: '#/components/schemas/Resource'
+            $ref: "#/components/schemas/Resource"
           type: array
-      required:
-      - resources
       type: object
+      required:
+        - resources
     ResourceAccessLevelsResponse:
       example:
         next_cursor: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
         access_levels:
-        - id: f454d283-ca67-4a8a-bdbb-df212eca5353
-          name: Admin
+          - id: f454d283-ca67-4a8a-bdbb-df212eca5353
+            name: Admin
       properties:
         next_cursor:
-          description: The cursor with which to continue pagination if additional
+          description:
+            The cursor with which to continue pagination if additional
             result pages exist.
           example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
           nullable: true
           type: string
         access_levels:
           items:
-            $ref: '#/components/schemas/AccessLevel'
+            $ref: "#/components/schemas/AccessLevel"
           type: array
-      required:
-      - access_levels
       type: object
+      required:
+        - access_levels
     ResourceUsersResponse:
       example:
         next_cursor: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
         users:
-        - user_id: f454d283-ca67-4a8a-bdbb-df212eca5353
-          access_level_id: f454d283-ca67-4a8a-adcb-df212eca5353
-          access_level_name: Admin
+          - user_id: f454d283-ca67-4a8a-bdbb-df212eca5353
+            access_level_id: f454d283-ca67-4a8a-adcb-df212eca5353
+            access_level_name: Admin
       properties:
         next_cursor:
-          description: The cursor with which to continue pagination if additional
+          description:
+            The cursor with which to continue pagination if additional
             result pages exist.
           example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
           nullable: true
           type: string
         users:
           items:
-            $ref: '#/components/schemas/ResourceUser'
+            $ref: "#/components/schemas/ResourceUser"
           type: array
-      required:
-      - users
       type: object
+      required:
+        - users
     ResourceUser:
       example:
         user_id: f454d283-ca67-4a8a-bdbb-df212eca5353
@@ -1193,20 +1110,18 @@ components:
           name: Admin
       properties:
         user_id:
-          description: The id of the user in your system. Opal will provide this id
-            when making requests for the user to your connector.
+          description: The id of the user in your system. Opal will provide this id when making requests for the user to your connector.
           example: f454d283-ca67-4a8a-bdbb-df212eca5353
           type: string
         email:
-          description: The email of the user. Opal will use this to associate the
-            user with the corresponding Opal user.
+          description: The email of the user. Opal will use this to associate the user with the corresponding Opal user.
           example: johndoe@mycompany.com
           type: string
         access_level:
-          $ref: '#/components/schemas/AccessLevel'
-      required:
-      - user_id
+          $ref: "#/components/schemas/AccessLevel"
       type: object
+      required:
+        - user_id
     Group:
       example:
         id: f454d283-ca67-4a8a-bdbb-df212eca5353
@@ -1214,8 +1129,7 @@ components:
         description: This group represents the engineering team.
       properties:
         id:
-          description: The id of the group in your system. Opal will provide this
-            id when making requests for the group to your connector.
+          description: The id of the group in your system. Opal will provide this id when making requests for the group to your connector.
           example: f454d283-ca67-4a8a-bdbb-df212eca5353
           type: string
         name:
@@ -1226,28 +1140,26 @@ components:
           description: The description of the group
           example: This group represents the engineering team.
           type: string
-      required:
-      - id
-      - name
       type: object
+      required:
+        - id
+        - name
     GroupUser:
       example:
         user_id: f454d283-ca67-4a8a-bdbb-df212eca5353
         email: johndoe@mycompany.com
       properties:
         user_id:
-          description: The id of the user in your system. Opal will provide this id
-            when making requests for the user to your connector.
+          description: The id of the user in your system. Opal will provide this id when making requests for the user to your connector.
           example: f454d283-ca67-4a8a-bdbb-df212eca5353
           type: string
         email:
-          description: The email of the user. Opal will use this to associate the
-            user with the corresponding Opal user.
+          description: The email of the user. Opal will use this to associate the user with the corresponding Opal user.
           example: johndoe@mycompany.com
           type: string
-      required:
-      - user_id
       type: object
+      required:
+        - user_id
     GroupResource:
       example:
         resource_id: f454d283-ca67-4a8a-bdbb-df212eca5353
@@ -1256,101 +1168,92 @@ components:
           name: Admin
       properties:
         resource_id:
-          description: The id of the resource in your system. Opal will provide this
-            id when making requests for the resource to your connector.
+          description: The id of the resource in your system. Opal will provide this id when making requests for the resource to your connector.
           example: f454d283-ca67-4a8a-bdbb-df212eca5353
           type: string
         access_level:
-          $ref: '#/components/schemas/AccessLevel'
-      required:
-      - resource_id
+          $ref: "#/components/schemas/AccessLevel"
       type: object
+      required:
+        - resource_id
     GroupResponse:
       example:
-        id: f454d283-ca67-4a8a-bdbb-df212eca5353
-        name: Engineering team
-        description: This group represents the engineering team.
+        group:
+          - id: f454d283-ca67-4a8a-bdbb-df212eca5353
+            name: Engineering team
+            description: This group represents the engineering team.
       properties:
-        id:
-          description: The id of the group in your system. Opal will provide this
-            id when making requests for the group to your connector.
-          example: f454d283-ca67-4a8a-bdbb-df212eca5353
-          type: string
-        name:
-          description: The name of the group
-          example: Admin
-          type: string
-        description:
-          description: The description of the group
-          example: This group represents the engineering team.
-          type: string
-      required:
-      - id
-      - name
+        group:
+          $ref: "#/components/schemas/Group"
       type: object
+      required:
+        - group
     GroupsResponse:
       example:
         next_cursor: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
         groups:
-        - id: f454d283-ca67-4a8a-bdbb-df212eca5353
-          name: Engineering team
-          description: This group represents the engineering teams.
+          - id: f454d283-ca67-4a8a-bdbb-df212eca5353
+            name: Engineering team
+            description: This group represents the engineering teams.
       properties:
         next_cursor:
-          description: The cursor with which to continue pagination if additional
+          description:
+            The cursor with which to continue pagination if additional
             result pages exist.
           example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
           nullable: true
           type: string
         groups:
           items:
-            $ref: '#/components/schemas/Group'
+            $ref: "#/components/schemas/Group"
           type: array
-      required:
-      - groups
       type: object
+      required:
+        - groups
     GroupUsersResponse:
       example:
         next_cursor: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
         users:
-        - user_id: f454d283-ca67-4a8a-bdbb-df212eca5353
-          email: johndoe@mycompany.com
+          - user_id: f454d283-ca67-4a8a-bdbb-df212eca5353
+            email: johndoe@mycompany.com
       properties:
         next_cursor:
-          description: The cursor with which to continue pagination if additional
+          description:
+            The cursor with which to continue pagination if additional
             result pages exist.
           example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
           nullable: true
           type: string
         users:
           items:
-            $ref: '#/components/schemas/GroupUser'
+            $ref: "#/components/schemas/GroupUser"
           type: array
-      required:
-      - users
       type: object
+      required:
+        - users
     GroupResourcesResponse:
       example:
         next_cursor: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
         resources:
-        - resource_id: f454d283-ca67-4a8a-bdbb-df212eca5353
-          access_level:
-            id: f454d283-ca67-4a8a-adcb-df212eca5353
-            name: Admin
+          - resource_id: f454d283-ca67-4a8a-bdbb-df212eca5353
+            access_level:
+              id: f454d283-ca67-4a8a-adcb-df212eca5353
+              name: Admin
       properties:
         next_cursor:
-          description: The cursor with which to continue pagination if additional
+          description:
+            The cursor with which to continue pagination if additional
             result pages exist.
           example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
           nullable: true
           type: string
         resources:
           items:
-            $ref: '#/components/schemas/GroupResource'
+            $ref: "#/components/schemas/GroupResource"
           type: array
-      required:
-      - resources
       type: object
+      required:
+        - resources
     GroupMemberGroup:
       example:
         group_id: f454d283-ca67-4a8a-bdbb-df212eca5353
@@ -1358,15 +1261,15 @@ components:
         description: Test Group Description
       properties:
         group_id:
-          description: 
+          description: The member group's ID
           example: f454d283-ca67-4a8a-bdbb-df212eca5353
           type: string
         name:
-          description:
+          description: The member group's name
           example: Test Group
           type: string
-        description: 
-          description:
+        description:
+          description: The member group's description
           example: Test Group Description
           type: string
     GroupMemberGroupsResponse:
@@ -1392,50 +1295,136 @@ components:
       required:
         - groups
         - next_cursor
-    addResourceUser_request:
-      properties:
-        user_id:
-          description: The ID of the user to add.
-          example: "123"
-          type: string
-        app_id:
-          description: The identifier of your custom app.
-          example: my-custom-app
-          type: string
-        access_level_id:
-          description: The ID of the access level to assign to the user.
-          example: "123"
-          type: string
-      required:
-      - app_id
-      - user_id
-    addGroupUser_request:
+    ActorUserIdentifier:
       properties:
         user_id:
           description: The id of the user.
-          example: "123"
+          example: 123
           type: string
-        app_id:
-          description: The identifier of your custom app.
-          example: my-custom-app
+        user_email:
+          description: The email of the user.
+          example: test@test.com
           type: string
+      type: object
       required:
-      - app_id
-      - user_id
-    addGroupResource_request:
+        - user_id
+        - user_email
+    EventContentLoginSuccess:
       properties:
         resource_id:
-          description: The id of the resource.
-          example: "123"
+          description: The id of the resource in your system that the actor logged in to.
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
           type: string
-        app_id:
-          description: The identifier of your custom app.
-          example: my-custom-app
+      type: object
+      required:
+        - resource_id
+    EventTypes:
+      description: The type of the event, the payload must correspond to this
+      example: login.success
+      type: string
+      enum:
+        - login.success
+    Event:
+      properties:
+        event_id:
+          description: A unique ID for the event
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
           type: string
-        access_level_id:
-          description: The id of the access level.
-          example: "123"
+        # openapi-generator refuses to generate inline enums as proper enum types
+        # https://github.com/OpenAPITools/openapi-generator/issues/2360
+        event_type:
+          $ref: "#/components/schemas/EventTypes"
+        occurred_at:
+          description: The time the event occurred
+          example: 2024-01-01T00:00:00Z
+          format: date-time
+          type: string
+        actor_user_identifier:
+          $ref: "#/components/schemas/ActorUserIdentifier"
+        event_content:
+          oneOf:
+            - $ref: "#/components/schemas/EventContentLoginSuccess"
+      type: object
+      required:
+        - event_id
+        - event_type
+        - occurredAt
+        - actor_user_identifier
+    EventsResponse:
+      properties:
+        next_cursor:
+          description:
+            The cursor with which to continue pagination if additional
+            result pages exist.
+          example: cD0yMDIxLTAxLTA2KzAzJTNBMjQlM0E1My40MzQzMjYlMkIwMCUzQTAw
+          type: string
+        events:
+          items:
+            $ref: "#/components/schemas/Event"
+          type: array
+      type: object
+      required:
+        - events
+    CreateUserResponse:
+      type: object
+      properties:
+        remote_user_id:
+          description: The ID of the user in your system. Opal will use this to associate the user with the corresponding Opal user.
+          example: f454d283-ca67-4a8a-bdbb-df212eca5353
           type: string
       required:
-      - app_id
-      - resource_id
+        - remote_user_id
+    UserTagAttributes:
+      type: object
+      properties:
+        key:
+          description: The key of the tag in Opal
+          example: team
+          type: string
+        value:
+          description: The value of the tag in Opal
+          example: Engineering
+          type: string
+        tag_id:
+          description: The ID of the tag in Opal
+          example: 2f9d3b8d-c567-4ae2-9e91-5d3f21c6ae62
+          type: string
+        connection_id:
+          description: The ID of the source connection in Opal
+          example: 12345678-1234-1234-1234-123456789012
+          type: string
+    UserAttributes:
+      type: object
+      properties:
+        email:
+          description: The email of the user.
+          example: johndoe@acme.com
+          type: string
+        first_name:
+          description: The first name of the user.
+          example: John
+          type: string
+        last_name:
+          description: The last name of the user.
+          example: Doe
+          type: string
+        title:
+          description: The title of the user, if available
+          example: Engineering Manager
+          type: string
+        team:
+          description: The team of the user, if available
+          example: Engineering
+          type: string
+        profile_url:
+          description: The URL to the user's profile photo
+          example: https://acme.com/users/johndoe.jpg
+          type: string
+        secondary_emails:
+          description: The secondary emails of the user, if available
+          example:
+            - johndoe@fizz.com
+            - johndoe@bar.com
+          type: array
+          items:
+            type: string
