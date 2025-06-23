@@ -273,6 +273,23 @@ func (c *AuthentikClient) RemoveGroupFromGroup(ctx *gin.Context, containingGroup
 	return nil
 }
 
+func (c *AuthentikClient) CreateUser(ctx *gin.Context, request authentik.UserRequest) (*string, error) {
+	ctxWithAuth := c.addAuthTokenToCtx(ctx)
+
+	createUserResponse, resp, err := c.client.CoreApi.CoreUsersCreate(ctxWithAuth).UserRequest(request).Execute()
+	if err != nil {
+		statusCode := 500
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+		return nil, &ClientError{StatusCode: statusCode, Message: "Failed to create user in Authentik", innerError: err}
+	}
+
+	userRemoteID := strconv.Itoa(int(createUserResponse.GetPk()))
+
+	return &userRemoteID, nil
+}
+
 func (c *AuthentikClient) addAuthTokenToCtx(ctx *gin.Context) context.Context {
 	return context.WithValue(ctx, authentik.ContextAccessToken, c.token)
 }
