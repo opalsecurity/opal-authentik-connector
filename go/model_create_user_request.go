@@ -19,5 +19,5 @@ type CreateUserRequest struct {
 	Manager UserAttributes `json:"manager,omitempty"`
 
 	// The tags of the user that were ingested by Opal
-	UserTags []UserTagAttributes `json:"user_tags,omitempty"`
+	UserTags []UserTags `json:"user_tags,omitempty"`
 }

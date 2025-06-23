@@ -9,7 +9,7 @@
 
 package openapi
 
-type UserTagAttributes struct {
+type UserTags struct {
 
 	// The key of the tag in Opal
 	Key string `json:"key,omitempty"`

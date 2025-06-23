@@ -51,7 +51,7 @@ paths:
                   description: The tags of the user that were ingested by Opal
                   type: array
                   items:
-                    $ref: "#/components/schemas/UserTagAttributes"
+                    $ref: "#/components/schemas/UserTags"
       responses:
         "200":
           description: The user was successfully added to the custom connector app.
@@ -1374,7 +1374,7 @@ components:
           type: string
       required:
         - remote_user_id
-    UserTagAttributes:
+    UserTags:
       type: object
       properties:
         key:
