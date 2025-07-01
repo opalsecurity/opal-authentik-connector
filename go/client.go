@@ -73,21 +73,9 @@ func NewAuthentikClient() (*AuthentikClient, error) {
 	configuration.Host = os.Getenv(AuthentikHostEnvKey)
 	configuration.Scheme = os.Getenv(AuthentikSchemeEnvKey)
 
-	// Add Cloudflare Access token headers to the default headers
-	clientID := os.Getenv("CF_ACCESS_CLIENT_ID")
-	clientSecret := os.Getenv("CF_ACCESS_CLIENT_SECRET")
-
 	if os.Getenv("DEBUG") != "" {
 		configuration.Debug = true
 	}
-
-	if clientID == "" || clientSecret == "" {
-		return nil, errors.Errorf("Cloudflare Access credentials are not set!")
-	}
-
-	// Use AddDefaultHeader to include the Cloudflare headers globally
-	configuration.AddDefaultHeader("CF-Access-Client-Id", clientID)
-	configuration.AddDefaultHeader("CF-Access-Client-Secret", clientSecret)
 
 	return &AuthentikClient{
 		token:  token,
