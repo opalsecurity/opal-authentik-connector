@@ -90,7 +90,7 @@ func (c *AuthentikClient) PaginatedListUsers(ctx *gin.Context) (users []authenti
 	}
 
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
-	paginatedUsers, resp, err := c.client.CoreApi.CoreUsersList(ctxWithAuth).Page(page).PageSize(DefaultPageSize).Execute()
+	paginatedUsers, resp, err := c.client.CoreApi.CoreUsersList(ctxWithAuth).IsActive(true).Page(page).PageSize(DefaultPageSize).Execute()
 	if err != nil {
 		statusCode := 500
 		if resp != nil {
