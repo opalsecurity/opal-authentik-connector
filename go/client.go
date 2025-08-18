@@ -278,6 +278,35 @@ func (c *AuthentikClient) CreateUser(ctx *gin.Context, request authentik.UserReq
 	return &userRemoteID, nil
 }
 
+func (c *AuthentikClient) DeactivateUser(ctx *gin.Context, userID string) error {
+	ctxWithAuth := c.addAuthTokenToCtx(ctx)
+
+	// The user ID provided by Opal is the user's primary key in Authentik
+	userPK, err := strconv.Atoi(userID)
+	if err != nil {
+		return err
+	}
+
+	falseVar := false
+	_, resp, err := c.client.CoreApi.CoreUsersPartialUpdate(
+		ctxWithAuth,
+		int32(userPK),
+	).PatchedUserRequest(
+		authentik.PatchedUserRequest{
+			IsActive: &falseVar,
+		},
+	).Execute()
+	if err != nil {
+		statusCode := 500
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+		return &ClientError{StatusCode: statusCode, Message: "Failed to deactivate user in Authentik", innerError: err}
+	}
+
+	return nil
+}
+
 func (c *AuthentikClient) addAuthTokenToCtx(ctx *gin.Context) context.Context {
 	return context.WithValue(ctx, authentik.ContextAccessToken, c.token)
 }

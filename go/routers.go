@@ -204,6 +204,12 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			"/users",
 			handleFunctions.UsersAPI.CreateUser,
 		},
+		{
+			"DeactivateUser",
+			http.MethodDelete,
+			"/users/:user_id",
+			handleFunctions.UsersAPI.DeactivateUser,
+		},
 	}
 }
 

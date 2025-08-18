@@ -53,6 +53,33 @@ func (api *UsersAPI) CreateUser(c *gin.Context) {
 	})
 }
 
+func (api *UsersAPI) DeactivateUser(c *gin.Context) {
+	userID := c.Param("user_id")
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, buildRespFromErr(errors.New("user_id is required"), http.StatusBadRequest))
+		return
+	}
+
+	authentik, err := NewAuthentikClient()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
+		return
+	}
+
+	err = authentik.DeactivateUser(c, userID)
+	if err != nil {
+		var clientErr *ClientError
+		if errors.As(err, &clientErr) {
+			c.JSON(clientErr.StatusCode, buildRespFromErr(err, clientErr.StatusCode))
+		} else {
+			c.JSON(http.StatusInternalServerError, buildRespFromErr(err, http.StatusInternalServerError))
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
 // Get /users
 func (api *UsersAPI) GetUsers(c *gin.Context) {
 	authentik, err := NewAuthentikClient()
