@@ -73,21 +73,9 @@ func NewAuthentikClient() (*AuthentikClient, error) {
 	configuration.Host = os.Getenv(AuthentikHostEnvKey)
 	configuration.Scheme = os.Getenv(AuthentikSchemeEnvKey)
 
-	// Add Cloudflare Access token headers to the default headers
-	clientID := os.Getenv("CF_ACCESS_CLIENT_ID")
-	clientSecret := os.Getenv("CF_ACCESS_CLIENT_SECRET")
-
 	if os.Getenv("DEBUG") != "" {
 		configuration.Debug = true
 	}
-
-	if clientID == "" || clientSecret == "" {
-		return nil, errors.Errorf("Cloudflare Access credentials are not set!")
-	}
-
-	// Use AddDefaultHeader to include the Cloudflare headers globally
-	configuration.AddDefaultHeader("CF-Access-Client-Id", clientID)
-	configuration.AddDefaultHeader("CF-Access-Client-Secret", clientSecret)
 
 	return &AuthentikClient{
 		token:  token,
@@ -102,7 +90,7 @@ func (c *AuthentikClient) PaginatedListUsers(ctx *gin.Context) (users []authenti
 	}
 
 	ctxWithAuth := c.addAuthTokenToCtx(ctx)
-	paginatedUsers, resp, err := c.client.CoreApi.CoreUsersList(ctxWithAuth).Page(page).PageSize(DefaultPageSize).Execute()
+	paginatedUsers, resp, err := c.client.CoreApi.CoreUsersList(ctxWithAuth).IsActive(true).Page(page).PageSize(DefaultPageSize).Execute()
 	if err != nil {
 		statusCode := 500
 		if resp != nil {
@@ -288,6 +276,35 @@ func (c *AuthentikClient) CreateUser(ctx *gin.Context, request authentik.UserReq
 	userRemoteID := strconv.Itoa(int(createUserResponse.GetPk()))
 
 	return &userRemoteID, nil
+}
+
+func (c *AuthentikClient) DeactivateUser(ctx *gin.Context, userID string) error {
+	ctxWithAuth := c.addAuthTokenToCtx(ctx)
+
+	// The user ID provided by Opal is the user's primary key in Authentik
+	userPK, err := strconv.Atoi(userID)
+	if err != nil {
+		return err
+	}
+
+	falseVar := false
+	_, resp, err := c.client.CoreApi.CoreUsersPartialUpdate(
+		ctxWithAuth,
+		int32(userPK),
+	).PatchedUserRequest(
+		authentik.PatchedUserRequest{
+			IsActive: &falseVar,
+		},
+	).Execute()
+	if err != nil {
+		statusCode := 500
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+		return &ClientError{StatusCode: statusCode, Message: "Failed to deactivate user in Authentik", innerError: err}
+	}
+
+	return nil
 }
 
 func (c *AuthentikClient) addAuthTokenToCtx(ctx *gin.Context) context.Context {

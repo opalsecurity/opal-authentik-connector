@@ -102,6 +102,29 @@ paths:
           $ref: "#/components/responses/UnexpectedError"
       tags:
         - users
+  /users/{user_id}:
+    delete:
+      description: Deprovisions a user from your custom app.
+      operationId: deleteUser
+      parameters:
+        - description: The identifier of the user.
+          example: 1234567890
+          explode: true
+          in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          style: simple
+      responses:
+        "200":
+          description: The user was successfully removed from the custom app.
+        "401":
+          $ref: "#/components/responses/InvalidRequestSignatureError"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+      tags:
+        - users
   /resources:
     get:
       description: Returns a list of resources for your organization.
